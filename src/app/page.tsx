@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Crosshair, Database, Radio, ShieldCheck, Users } from "lucide-react";
+import { ArrowUpRight, Camera, Crosshair, Database, Radio, ShieldCheck, Users } from "lucide-react";
 import { FeaturedCanon } from "@/components/featured-canon";
 
 const modules = [
-  { code: "01", title: "Operator Registry", text: "Personnel files, callsigns, roles, qualifications, source facts, and unit history.", icon: Users },
-  { code: "02", title: "Expansion Archive", text: "Approved canonical cards, revision history, alternate artwork, and collector records.", icon: Database },
-  { code: "03", title: "Operations", text: "Planned home for deployments, facilities, after-action reports, and institutional memory.", icon: Crosshair }
+  { code: "01", title: "Team Roster", text: "Member dossiers, callsigns, ranks, biographies, qualifications, social links, and field loadouts.", icon: Users },
+  { code: "02", title: "Event Gallery", text: "Photos, videos, locations, and after-action records from milsim events, training days, and team operations.", icon: Camera },
+  { code: "03", title: "Recruitment", text: "A structured path for hopefuls to introduce themselves, share experience, and apply to train with the team.", icon: Crosshair }
 ];
 
 export default function Home() {
@@ -18,10 +18,11 @@ export default function Home() {
           <span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span>
         </Link>
         <nav>
-          <a href="#registry">Archive</a>
-          <a href="#platform">Platform</a>
-          <span className="secure-state"><i /> NETWORK SECURE</span>
-          <button className="button ghost">Command Access</button>
+          <a href="#team">Team</a>
+          <a href="#events">Events</a>
+          <a href="#recruitment">Recruitment</a>
+          <a href="#card-archive">Card Archive</a>
+          <button className="button ghost">Member Login</button>
         </nav>
       </header>
 
@@ -33,8 +34,8 @@ export default function Home() {
           <h1>Shadow Group<br /><em>Airsoft Milsim.</em></h1>
           <p>We are an organized airsoft milsim team focused on teamwork, fieldcraft, training, and showing up prepared for large-scale events across Texas and beyond.</p>
           <div className="actions">
-            <Link className="button primary" href="/cards">Meet the team <ArrowUpRight size={17} /></Link>
-            <button className="button secondary">Apply to join</button>
+            <a className="button primary" href="#team">Meet the team <ArrowUpRight size={17} /></a>
+            <a className="button secondary" href="#recruitment">Apply to join</a>
           </div>
           <div className="mission-strip">
             <div><Radio /><span>TEAM STATUS</span><strong>ACTIVE</strong></div>
@@ -43,31 +44,62 @@ export default function Home() {
           </div>
         </div>
         <aside className="command-panel">
-          <div className="panel-label"><span>FEATURED OPERATOR</span><span>TEAM ARCHIVE</span></div>
-          <FeaturedCanon />
-          <div className="panel-footer"><span>PUBLIC PROFILE</span><span>RANDOMIZED ON LOAD</span></div>
+          <div className="panel-label"><span>UNIT PROFILE</span><span>CENTRAL TEXAS</span></div>
+          <div className="console-copy">
+            <span className="stamp">SHADOW GROUP AIRSOFT</span>
+            <h3>Train together. Deploy together.</h3>
+            <p>Our site documents the people, events, field roles, loadouts, partnerships, and standards behind the Shadow Group patch.</p>
+          </div>
+          <div className="console-grid">
+            <div><span>ROSTER</span><strong>TEAM DOSSIERS</strong></div>
+            <div><span>OPERATIONS</span><strong>EVENT ARCHIVE</strong></div>
+            <div><span>ACCESS</span><strong>MEMBER PORTAL</strong></div>
+            <div><span>PIPELINE</span><strong>RECRUITMENT</strong></div>
+          </div>
+          <div className="panel-footer"><span>PUBLIC TEAM PROFILE</span><span>EST. CENTRAL TEXAS</span></div>
         </aside>
       </section>
 
-      <section id="registry" className="section archive-section">
+      <section id="team" className="section archive-section">
         <div className="section-index">SECTION // 01</div>
         <div className="section-heading">
           <div><span className="kicker">TEAM DOSSIERS</span><h2>Meet Shadow Group</h2><p>Learn who we are, the roles we fill, the events we attend, and the gear each operator trusts in the field.</p></div>
-          <Link href="/cards" className="text-link">View operator archive <ArrowUpRight size={16} /></Link>
+          <Link href="/team" className="text-link">View team roster <ArrowUpRight size={16} /></Link>
         </div>
         <div className="archive-console">
-          <div className="console-copy"><span className="stamp">SHADOW GROUP AIRSOFT</span><h3>Built around the team.</h3><p>Operator dossiers, event photography, loadouts, team history, social links, recruitment, sponsorships, and the custom card project all live in one place.</p></div>
-          <div className="console-grid"><div><span>TEAM</span><strong>ACTIVE ROSTER</strong></div><div><span>EVENTS</span><strong>FIELD ARCHIVE</strong></div><div><span>RECRUITING</span><strong>APPLICATION REVIEW</strong></div><div><span>PARTNERS</span><strong>SPONSOR READY</strong></div></div>
+          <div className="console-copy"><span className="stamp">SHADOW GROUP AIRSOFT</span><h3>Built around the team.</h3><p>Operator dossiers combine rank, biography, field role, event history, social accounts, personal loadout, and sponsor or affiliate gear attribution.</p></div>
+          <div className="console-grid"><div><span>TEAM</span><strong>ACTIVE ROSTER</strong></div><div><span>RANK</span><strong>CHAIN OF COMMAND</strong></div><div><span>LOADOUTS</span><strong>FIELD PROVEN</strong></div><div><span>PARTNERS</span><strong>SPONSOR READY</strong></div></div>
         </div>
       </section>
 
-      <section id="platform" className="section platform-section">
+      <section id="events" className="section platform-section">
         <div className="section-index">SECTION // 02</div>
         <span className="kicker">TEAM PLATFORM</span><h2>Everything behind the patch.</h2>
         <div className="module-grid">{modules.map(({ code, title, text, icon: Icon }) => <article className="module" key={title}><span className="module-code">{code}</span><Icon /><h3>{title}</h3><p>{text}</p><span className="module-state">MODULE STAGED</span></article>)}</div>
       </section>
 
-      <footer><div><Image src="/shadow_group_logo.png" width={54} height={54} alt="" /><span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span></div><span>Independent airsoft milsim team. Not affiliated with Wizards of the Coast.</span></footer>
+      <section id="recruitment" className="section archive-section">
+        <div className="section-index">SECTION // 03</div>
+        <div className="section-heading">
+          <div><span className="kicker">JOIN THE TEAM</span><h2>Recruitment</h2><p>Hopefuls can submit their information, background, availability, and airsoft experience for review by Shadow Group leadership.</p></div>
+          <Link href="/recruitment" className="text-link">Start an application <ArrowUpRight size={16} /></Link>
+        </div>
+      </section>
+
+      <section id="card-archive" className="section platform-section">
+        <div className="section-index">SUBSECTION // A</div>
+        <div className="section-heading">
+          <div><span className="kicker">TEAM CREATIVE PROJECT</span><h2>Shadow Group Card Archive</h2><p>Our custom Magic-style cards are a side project built around team personalities and history. They are not the primary purpose of this site.</p></div>
+          <Link href="/cards" className="text-link">Open card archive <ArrowUpRight size={16} /></Link>
+        </div>
+        <div className="command-panel">
+          <div className="panel-label"><span>FEATURED CARD</span><span>APPROVED CANON</span></div>
+          <FeaturedCanon />
+          <div className="panel-footer"><span>TEAM SIDE PROJECT</span><span>NOT THE PRIMARY SITE</span></div>
+        </div>
+      </section>
+
+      <footer><div><Image src="/shadow_group_logo.png" width={54} height={54} alt="" /><span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span></div><span>Independent Central Texas airsoft milsim team. Custom card archive maintained as a team side project.</span></footer>
     </main>
   );
 }
