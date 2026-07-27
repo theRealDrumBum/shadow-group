@@ -6,7 +6,7 @@ type SyncPayload = {
   card: {
     slug: string;
     name: string;
-    status?: "draft" | "generating" | "review" | "changes_requested" | "approved" | "archived";
+    status?: "draft" | "generating" | "submitted" | "changes_requested";
     collectorNumber?: string | null;
   };
   operator: {
@@ -16,11 +16,7 @@ type SyncPayload = {
     bio?: string | null;
     teamRole?: string | null;
   };
-  expansion?: {
-    code: string;
-    name: string;
-    description?: string | null;
-  } | null;
+  expansion?: { code: string; name: string; description?: string | null } | null;
   facts?: Array<{
     category: "strength" | "weakness" | "personality" | "gear" | "appearance" | "quote" | "story" | "role" | "running_joke";
     fact: string;
@@ -56,30 +52,19 @@ function invalidPayload(payload: Partial<SyncPayload>) {
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  if (!authorized(request)) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
+  if (!authorized(request)) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
   const syncKey = request.nextUrl.searchParams.get("syncKey")?.trim();
   const slug = request.nextUrl.searchParams.get("slug")?.trim();
-
-  if (!syncKey && !slug) {
-    return NextResponse.json({ error: "Provide syncKey or slug." }, { status: 400 });
-  }
+  if (!syncKey && !slug) return NextResponse.json({ error: "Provide syncKey or slug." }, { status: 400 });
 
   try {
     const supabase = createSupabaseAdmin();
-    let query = supabase
-      .from("cards")
-      .select("*, operators(*), card_versions(*), expansions(*)")
-      .limit(10);
-
+    let query = supabase.from("cards").select("*, operators(*), card_versions(*), expansions(*)").limit(10);
     if (syncKey) query = query.eq("sync_key", syncKey);
     if (slug) query = query.eq("slug", slug);
-
     const { data, error } = await query;
     if (error) throw error;
-
     return NextResponse.json({ exists: Boolean(data?.length), matches: data ?? [] });
   } catch (error) {
     console.error("Protected card lookup failed", error);
@@ -88,66 +73,68 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request)) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
+  if (!authorized(request)) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
-  let payload: SyncPayload;
-  try {
-    payload = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
-  }
-
-  if (invalidPayload(payload)) {
+  const payload = await request.json().catch(() => null) as SyncPayload | null;
+  if (!payload || invalidPayload(payload)) {
     return NextResponse.json({ error: "Missing required card, operator, version, or syncKey fields." }, { status: 400 });
+  }
+
+  const requestedStatus = payload.card.status ?? "draft";
+  if (!["draft", "generating", "submitted", "changes_requested"].includes(requestedStatus)) {
+    return NextResponse.json(
+      { error: "The sync API cannot approve, reject, or archive cards. Submit the card for administrator review." },
+      { status: 403 }
+    );
   }
 
   try {
     const supabase = createSupabaseAdmin();
+    const now = new Date().toISOString();
 
     const { data: operator, error: operatorError } = await supabase
       .from("operators")
-      .upsert(
-        {
-          callsign: payload.operator.callsign,
-          slug: payload.operator.slug,
-          display_name: payload.operator.displayName ?? null,
-          bio: payload.operator.bio ?? null,
-          team_role: payload.operator.teamRole ?? null,
-          updated_at: new Date().toISOString()
-        },
-        { onConflict: "callsign" }
-      )
+      .upsert({
+        callsign: payload.operator.callsign,
+        slug: payload.operator.slug,
+        display_name: payload.operator.displayName ?? null,
+        bio: payload.operator.bio ?? null,
+        team_role: payload.operator.teamRole ?? null,
+        updated_at: now
+      }, { onConflict: "callsign" })
       .select("*")
       .single();
     if (operatorError) throw operatorError;
 
     let expansionId: string | null = null;
     if (payload.expansion) {
-      const { data: expansion, error: expansionError } = await supabase
+      const { data: expansion, error } = await supabase
         .from("expansions")
-        .upsert(
-          {
-            code: payload.expansion.code.toUpperCase(),
-            name: payload.expansion.name,
-            description: payload.expansion.description ?? null,
-            updated_at: new Date().toISOString()
-          },
-          { onConflict: "code" }
-        )
+        .upsert({
+          code: payload.expansion.code.toUpperCase(),
+          name: payload.expansion.name,
+          description: payload.expansion.description ?? null,
+          updated_at: now
+        }, { onConflict: "code" })
         .select("id")
         .single();
-      if (expansionError) throw expansionError;
+      if (error) throw error;
       expansionId = expansion.id;
     }
 
     const { data: existingCard, error: existingError } = await supabase
       .from("cards")
-      .select("id, current_version_id")
+      .select("id, status")
       .eq("sync_key", payload.syncKey)
       .maybeSingle();
     if (existingError) throw existingError;
+
+    if (existingCard?.status === "approved") {
+      return NextResponse.json(
+        { error: "This card is canonical. Create a proposed revision without changing its approval state." },
+        { status: 409 }
+      );
+    }
 
     const cardRecord = {
       operator_id: operator.id,
@@ -155,39 +142,31 @@ export async function POST(request: NextRequest) {
       sync_key: payload.syncKey,
       slug: payload.card.slug,
       name: payload.card.name,
-      status: payload.card.status ?? "draft",
+      status: requestedStatus,
       collector_number: payload.card.collectorNumber ?? null,
-      published_at: payload.card.status === "approved" ? new Date().toISOString() : null
+      submitted_at: requestedStatus === "submitted" ? now : null,
+      published_at: null
     };
 
     let cardId: string;
     if (existingCard) {
-      const { data: updated, error } = await supabase
-        .from("cards")
-        .update(cardRecord)
-        .eq("id", existingCard.id)
-        .select("id")
-        .single();
+      const { data, error } = await supabase.from("cards").update(cardRecord).eq("id", existingCard.id).select("id").single();
       if (error) throw error;
-      cardId = updated.id;
+      cardId = data.id;
     } else {
-      const { data: created, error } = await supabase
-        .from("cards")
-        .insert(cardRecord)
-        .select("id")
-        .single();
+      const { data, error } = await supabase.from("cards").insert(cardRecord).select("id").single();
       if (error) throw error;
-      cardId = created.id;
+      cardId = data.id;
     }
 
-    const { data: lastVersion, error: versionLookupError } = await supabase
+    const { data: lastVersion, error: lookupError } = await supabase
       .from("card_versions")
       .select("version_number")
       .eq("card_id", cardId)
       .order("version_number", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (versionLookupError) throw versionLookupError;
+    if (lookupError) throw lookupError;
 
     const { data: version, error: versionError } = await supabase
       .from("card_versions")
@@ -210,41 +189,35 @@ export async function POST(request: NextRequest) {
       .single();
     if (versionError) throw versionError;
 
-    const { error: currentVersionError } = await supabase
-      .from("cards")
-      .update({ current_version_id: version.id })
-      .eq("id", cardId);
+    const { error: currentVersionError } = await supabase.from("cards").update({ current_version_id: version.id }).eq("id", cardId);
     if (currentVersionError) throw currentVersionError;
 
     if (payload.facts?.length) {
-      const facts = payload.facts
-        .filter(({ fact }) => fact.trim().length > 0)
-        .map((fact) => ({
-          operator_id: operator.id,
-          category: fact.category,
-          fact: fact.fact.trim(),
-          source: fact.source ?? "card-sync",
-          approved: fact.approved ?? false
-        }));
-
+      const facts = payload.facts.filter(({ fact }) => fact.trim()).map((fact) => ({
+        operator_id: operator.id,
+        category: fact.category,
+        fact: fact.fact.trim(),
+        source: fact.source ?? "card-sync",
+        approved: false
+      }));
       if (facts.length) {
-        const { error: factsError } = await supabase
-          .from("operator_facts")
-          .upsert(facts, { onConflict: "operator_id,category,fact", ignoreDuplicates: true });
-        if (factsError) throw factsError;
+        const { error } = await supabase.from("operator_facts").upsert(facts, {
+          onConflict: "operator_id,category,fact",
+          ignoreDuplicates: true
+        });
+        if (error) throw error;
       }
     }
 
-    return NextResponse.json(
-      {
-        action: existingCard ? "updated" : "created",
-        cardId,
-        versionId: version.id,
-        versionNumber: version.version_number,
-        syncKey: payload.syncKey
-      },
-      { status: existingCard ? 200 : 201 }
-    );
+    return NextResponse.json({
+      action: existingCard ? "updated" : "created",
+      workflowStatus: requestedStatus,
+      canonical: false,
+      cardId,
+      versionId: version.id,
+      versionNumber: version.version_number,
+      syncKey: payload.syncKey
+    }, { status: existingCard ? 200 : 201 });
   } catch (error) {
     console.error("Card sync failed", error);
     return NextResponse.json({ error: "Unable to synchronize card." }, { status: 500 });
