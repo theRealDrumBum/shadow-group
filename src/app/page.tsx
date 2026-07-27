@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, Camera, Crosshair, Radio, ShieldCheck, Users } from "lucide-react";
 import { FeaturedCanon } from "@/components/featured-canon";
 import { GoogleLoginButton } from "@/components/google-login-button";
+import { createClient } from "@/lib/supabase/server";
 
 const modules = [
   { code: "01", title: "Team Roster", text: "Member dossiers, callsigns, ranks, biographies, qualifications, social links, and field loadouts.", icon: Users },
@@ -10,7 +11,10 @@ const modules = [
   { code: "03", title: "Recruitment", text: "A structured path for hopefuls to introduce themselves, share experience, and apply to train with the team.", icon: Crosshair }
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <main>
       <header className="site-header">
@@ -23,7 +27,7 @@ export default function Home() {
           <a href="#events">Events</a>
           <a href="#recruitment">Recruitment</a>
           <a href="#card-archive">Card Archive</a>
-          <GoogleLoginButton />
+          <GoogleLoginButton initiallyAuthenticated={Boolean(user)} />
         </nav>
       </header>
 
@@ -54,7 +58,7 @@ export default function Home() {
           <div className="console-grid">
             <div><span>ROSTER</span><strong>TEAM DOSSIERS</strong></div>
             <div><span>OPERATIONS</span><strong>EVENT ARCHIVE</strong></div>
-            <div><span>ACCESS</span><strong>MEMBER PORTAL</strong></div>
+            <div><span>ACCESS</span><strong>{user ? "SESSION ACTIVE" : "MEMBER PORTAL"}</strong></div>
             <div><span>PIPELINE</span><strong>RECRUITMENT</strong></div>
           </div>
           <div className="panel-footer"><span>PUBLIC TEAM PROFILE</span><span>EST. CENTRAL TEXAS</span></div>
