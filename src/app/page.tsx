@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Camera, Crosshair, Database, Radio, ShieldCheck, Users } from "lucide-react";
+import { ArrowUpRight, Camera, Crosshair, Radio, ShieldCheck, Users } from "lucide-react";
 import { FeaturedCanon } from "@/components/featured-canon";
+import { GoogleLoginButton } from "@/components/google-login-button";
 
 const modules = [
   { code: "01", title: "Team Roster", text: "Member dossiers, callsigns, ranks, biographies, qualifications, social links, and field loadouts.", icon: Users },
@@ -22,7 +23,7 @@ export default function Home() {
           <a href="#events">Events</a>
           <a href="#recruitment">Recruitment</a>
           <a href="#card-archive">Card Archive</a>
-          <button className="button ghost">Member Login</button>
+          <GoogleLoginButton />
         </nav>
       </header>
 
