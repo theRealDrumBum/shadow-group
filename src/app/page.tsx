@@ -14,7 +14,7 @@ export default function Home() {
     <main>
       <header className="site-header">
         <Link href="/" className="brand">
-          <Image src="/shadow-group-logo.svg" width={58} height={58} alt="Shadow Group" priority />
+          <Image src="/shadow_group_logo.png" width={58} height={58} alt="Shadow Group" priority />
           <span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span>
         </Link>
         <nav>
@@ -26,7 +26,7 @@ export default function Home() {
       </header>
 
       <section className="hero">
-        <div className="hero-watermark"><Image src="/shadow-group-logo.svg" fill alt="" priority /></div>
+        <div className="hero-watermark"><Image src="/shadow_group_logo.png" fill alt="" priority /></div>
         <div className="hero-copy">
           <div className="classification"><span>CONTROLLED // SHADOW GROUP</span><span>SG-NET 01</span></div>
           <span className="kicker">PRIVATE MILSIM UNIT // DIGITAL COMMAND PLATFORM</span>
@@ -67,7 +67,7 @@ export default function Home() {
         <div className="module-grid">{modules.map(({ code, title, text, icon: Icon }) => <article className="module" key={title}><span className="module-code">{code}</span><Icon /><h3>{title}</h3><p>{text}</p><span className="module-state">MODULE STAGED</span></article>)}</div>
       </section>
 
-      <footer><div><Image src="/shadow-group-logo.svg" width={54} height={54} alt="" /><span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span></div><span>Independent custom expansion archive. Not affiliated with Wizards of the Coast.</span></footer>
+      <footer><div><Image src="/shadow_group_logo.png" width={54} height={54} alt="" /><span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span></div><span>Independent custom expansion archive. Not affiliated with Wizards of the Coast.</span></footer>
     </main>
   );
 }
