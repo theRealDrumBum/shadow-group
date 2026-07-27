@@ -28,46 +28,46 @@ export default function Home() {
       <section className="hero">
         <div className="hero-watermark"><Image src="/shadow_group_logo.png" fill alt="" priority /></div>
         <div className="hero-copy">
-          <div className="classification"><span>CONTROLLED // SHADOW GROUP</span><span>SG-NET 01</span></div>
-          <span className="kicker">PRIVATE MILSIM UNIT // DIGITAL COMMAND PLATFORM</span>
-          <h1>From the shadows.<br /><em>Into legend.</em></h1>
-          <p>A hardened archive for Shadow Group personnel, operations, and the custom expansion built from the operators behind the kit.</p>
+          <div className="classification"><span>SHADOW GROUP // AIRSOFT MILSIM</span><span>EX UMBRIS MORS</span></div>
+          <span className="kicker">CENTRAL TEXAS AIRSOFT MILSIM TEAM</span>
+          <h1>Shadow Group<br /><em>Airsoft Milsim.</em></h1>
+          <p>We are an organized airsoft milsim team focused on teamwork, fieldcraft, training, and showing up prepared for large-scale events across Texas and beyond.</p>
           <div className="actions">
-            <Link className="button primary" href="/cards">Enter the archive <ArrowUpRight size={17} /></Link>
-            <button className="button secondary">Submit card intelligence</button>
+            <Link className="button primary" href="/cards">Meet the team <ArrowUpRight size={17} /></Link>
+            <button className="button secondary">Apply to join</button>
           </div>
           <div className="mission-strip">
-            <div><Radio /><span>UNIT STATUS</span><strong>OPERATIONAL</strong></div>
-            <div><ShieldCheck /><span>CANON CONTROL</span><strong>ADMIN APPROVED</strong></div>
-            <div><Crosshair /><span>ACTIVE EXPANSION</span><strong>SHADOW GROUP // 001</strong></div>
+            <div><Radio /><span>TEAM STATUS</span><strong>ACTIVE</strong></div>
+            <div><ShieldCheck /><span>UNIT MOTTO</span><strong>EX UMBRIS MORS</strong></div>
+            <div><Crosshair /><span>PRIMARY FOCUS</span><strong>AIRSOFT MILSIM</strong></div>
           </div>
         </div>
         <aside className="command-panel">
-          <div className="panel-label"><span>FEATURED CANON</span><span>RANDOMIZED QUERY</span></div>
+          <div className="panel-label"><span>FEATURED OPERATOR</span><span>TEAM ARCHIVE</span></div>
           <FeaturedCanon />
-          <div className="panel-footer"><span>PUBLIC CLEARANCE</span><span>AUTO-ROTATE ON LOAD</span></div>
+          <div className="panel-footer"><span>PUBLIC PROFILE</span><span>RANDOMIZED ON LOAD</span></div>
         </aside>
       </section>
 
       <section id="registry" className="section archive-section">
         <div className="section-index">SECTION // 01</div>
         <div className="section-heading">
-          <div><span className="kicker">CANONICAL RECORDS</span><h2>Expansion Archive</h2><p>Only command-approved versions enter the official expansion. Drafts and proposed revisions remain quarantined until reviewed.</p></div>
-          <Link href="/cards" className="text-link">Open complete registry <ArrowUpRight size={16} /></Link>
+          <div><span className="kicker">TEAM DOSSIERS</span><h2>Meet Shadow Group</h2><p>Learn who we are, the roles we fill, the events we attend, and the gear each operator trusts in the field.</p></div>
+          <Link href="/cards" className="text-link">View operator archive <ArrowUpRight size={16} /></Link>
         </div>
         <div className="archive-console">
-          <div className="console-copy"><span className="stamp">AUTHORIZED PERSONNEL ONLY</span><h3>Every card is evidence.</h3><p>Each record retains the operator facts, generated artwork, card mechanics, version history, review decisions, and the exact data required to recreate it.</p></div>
-          <div className="console-grid"><div><span>STATUS</span><strong>CANON GATED</strong></div><div><span>VERSIONING</span><strong>IMMUTABLE HISTORY</strong></div><div><span>SYNC</span><strong>GPT CONNECTED</strong></div><div><span>AUTHORITY</span><strong>COMMAND REVIEW</strong></div></div>
+          <div className="console-copy"><span className="stamp">SHADOW GROUP AIRSOFT</span><h3>Built around the team.</h3><p>Operator dossiers, event photography, loadouts, team history, social links, recruitment, sponsorships, and the custom card project all live in one place.</p></div>
+          <div className="console-grid"><div><span>TEAM</span><strong>ACTIVE ROSTER</strong></div><div><span>EVENTS</span><strong>FIELD ARCHIVE</strong></div><div><span>RECRUITING</span><strong>APPLICATION REVIEW</strong></div><div><span>PARTNERS</span><strong>SPONSOR READY</strong></div></div>
         </div>
       </section>
 
       <section id="platform" className="section platform-section">
         <div className="section-index">SECTION // 02</div>
-        <span className="kicker">MODULAR COMMAND SYSTEM</span><h2>Built for the unit.</h2>
+        <span className="kicker">TEAM PLATFORM</span><h2>Everything behind the patch.</h2>
         <div className="module-grid">{modules.map(({ code, title, text, icon: Icon }) => <article className="module" key={title}><span className="module-code">{code}</span><Icon /><h3>{title}</h3><p>{text}</p><span className="module-state">MODULE STAGED</span></article>)}</div>
       </section>
 
-      <footer><div><Image src="/shadow_group_logo.png" width={54} height={54} alt="" /><span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span></div><span>Independent custom expansion archive. Not affiliated with Wizards of the Coast.</span></footer>
+      <footer><div><Image src="/shadow_group_logo.png" width={54} height={54} alt="" /><span><strong>SHADOW GROUP</strong><small>EX UMBRIS MORS</small></span></div><span>Independent airsoft milsim team. Not affiliated with Wizards of the Coast.</span></footer>
     </main>
   );
 }
