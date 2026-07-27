@@ -1,7 +1,10 @@
 -- Create and maintain a Shadow Group profile when Supabase Auth creates a user.
 -- Authentication proves identity; allowed_accounts controls approval and role.
 
-create or replace function public.is_admin(check_user_id uuid default auth.uid())
+-- PostgreSQL identifies this function by name and argument types, and an earlier
+-- migration created it with the input parameter name `user_id`. CREATE OR REPLACE
+-- must preserve that parameter name.
+create or replace function public.is_admin(user_id uuid default auth.uid())
 returns boolean
 language sql
 stable
@@ -11,7 +14,7 @@ as $$
   select exists (
     select 1
     from public.profiles p
-    where p.id = check_user_id
+    where p.id = user_id
       and p.role = 'admin'
       and p.account_status = 'approved'
   );
