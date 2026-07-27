@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
+type DraftVersionStatus = "draft" | "generating" | "submitted" | "changes_requested";
+
 type SyncPayload = {
   syncKey: string;
   card: {
     slug: string;
     name: string;
-    status?: "draft" | "generating" | "submitted" | "changes_requested";
+    /** @deprecated Prefer version.status. Retained for older GPT actions. */
+    status?: DraftVersionStatus;
     collectorNumber?: string | null;
   };
   operator: {
@@ -24,6 +27,7 @@ type SyncPayload = {
     approved?: boolean;
   }>;
   version: {
+    status?: DraftVersionStatus;
     manaCost?: string | null;
     colorIdentity?: string[];
     typeLine: string;
@@ -60,7 +64,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createSupabaseAdmin();
-    let query = supabase.from("cards").select("*, operators(*), card_versions(*), expansions(*)").limit(10);
+    let query = supabase
+      .from("cards")
+      .select("*, operators(*), card_versions(*), expansions(*)")
+      .limit(10);
     if (syncKey) query = query.eq("sync_key", syncKey);
     if (slug) query = query.eq("slug", slug);
     const { data, error } = await query;
@@ -80,10 +87,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing required card, operator, version, or syncKey fields." }, { status: 400 });
   }
 
-  const requestedStatus = payload.card.status ?? "draft";
-  if (!["draft", "generating", "submitted", "changes_requested"].includes(requestedStatus)) {
+  const requestedVersionStatus = payload.version.status ?? payload.card.status ?? "draft";
+  if (!["draft", "generating", "submitted", "changes_requested"].includes(requestedVersionStatus)) {
     return NextResponse.json(
-      { error: "The sync API cannot approve, reject, or archive cards. Submit the card for administrator review." },
+      { error: "The sync API cannot approve, reject, or archive versions. Submit the version for administrator review." },
       { status: 403 }
     );
   }
@@ -124,17 +131,10 @@ export async function POST(request: NextRequest) {
 
     const { data: existingCard, error: existingError } = await supabase
       .from("cards")
-      .select("id, status")
+      .select("id, status, canonical_version_id")
       .eq("sync_key", payload.syncKey)
       .maybeSingle();
     if (existingError) throw existingError;
-
-    if (existingCard?.status === "approved") {
-      return NextResponse.json(
-        { error: "This card is canonical. Create a proposed revision without changing its approval state." },
-        { status: 409 }
-      );
-    }
 
     const cardRecord = {
       operator_id: operator.id,
@@ -142,19 +142,25 @@ export async function POST(request: NextRequest) {
       sync_key: payload.syncKey,
       slug: payload.card.slug,
       name: payload.card.name,
-      status: requestedStatus,
-      collector_number: payload.card.collectorNumber ?? null,
-      submitted_at: requestedStatus === "submitted" ? now : null,
-      published_at: null
+      collector_number: payload.card.collectorNumber ?? null
     };
 
     let cardId: string;
     if (existingCard) {
-      const { data, error } = await supabase.from("cards").update(cardRecord).eq("id", existingCard.id).select("id").single();
+      const { data, error } = await supabase
+        .from("cards")
+        .update(cardRecord)
+        .eq("id", existingCard.id)
+        .select("id")
+        .single();
       if (error) throw error;
       cardId = data.id;
     } else {
-      const { data, error } = await supabase.from("cards").insert(cardRecord).select("id").single();
+      const { data, error } = await supabase
+        .from("cards")
+        .insert({ ...cardRecord, status: "draft" })
+        .select("id")
+        .single();
       if (error) throw error;
       cardId = data.id;
     }
@@ -173,6 +179,8 @@ export async function POST(request: NextRequest) {
       .insert({
         card_id: cardId,
         version_number: (lastVersion?.version_number ?? 0) + 1,
+        status: requestedVersionStatus,
+        submitted_at: requestedVersionStatus === "submitted" ? now : null,
         mana_cost: payload.version.manaCost ?? null,
         color_identity: payload.version.colorIdentity ?? [],
         type_line: payload.version.typeLine,
@@ -185,11 +193,16 @@ export async function POST(request: NextRequest) {
         art_prompt: payload.version.artPrompt ?? null,
         renderer_data: payload.version.rendererData ?? {}
       })
-      .select("id, version_number")
+      .select("id, version_number, status")
       .single();
     if (versionError) throw versionError;
 
-    const { error: currentVersionError } = await supabase.from("cards").update({ current_version_id: version.id }).eq("id", cardId);
+    // current_version_id means newest working revision. canonical_version_id remains
+    // untouched until an administrator approves this specific version.
+    const { error: currentVersionError } = await supabase
+      .from("cards")
+      .update({ current_version_id: version.id })
+      .eq("id", cardId);
     if (currentVersionError) throw currentVersionError;
 
     if (payload.facts?.length) {
@@ -210,16 +223,20 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      action: existingCard ? "updated" : "created",
-      workflowStatus: requestedStatus,
+      action: existingCard ? "version_created" : "card_created",
+      versionStatus: requestedVersionStatus,
       canonical: false,
+      existingCanonicalVersionId: existingCard?.canonical_version_id ?? null,
       cardId,
       versionId: version.id,
       versionNumber: version.version_number,
-      syncKey: payload.syncKey
+      syncKey: payload.syncKey,
+      message: existingCard?.canonical_version_id
+        ? "A proposed version was created. The currently approved version remains canonical until this version is approved."
+        : "The card and its first proposed version were created."
     }, { status: existingCard ? 200 : 201 });
   } catch (error) {
     console.error("Card sync failed", error);
-    return NextResponse.json({ error: "Unable to synchronize card." }, { status: 500 });
+    return NextResponse.json({ error: "Unable to synchronize card version." }, { status: 500 });
   }
 }
