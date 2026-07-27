@@ -1,14 +1,14 @@
 openapi: 3.1.0
 info:
   title: Shadow Group Card Registry API
-  version: 1.0.0
+  version: 1.1.0
 servers:
   - url: https://YOUR-VERCEL-DOMAIN.vercel.app
 paths:
   /api/cards/sync:
     get:
       operationId: findCardInRegistry
-      summary: Verify whether a card already exists before creating or updating it
+      summary: Verify whether a card already exists before creating a card or proposing a new version
       security:
         - bearerAuth: []
       parameters:
@@ -20,7 +20,7 @@ paths:
           schema: { type: string }
       responses:
         '200':
-          description: Registry lookup result
+          description: Registry lookup result including all existing versions and their approval states
           content:
             application/json:
               schema:
@@ -32,7 +32,8 @@ paths:
                     items: { type: object, additionalProperties: true }
     post:
       operationId: synchronizeCard
-      summary: Create a new registry card or append a new version to an existing card
+      summary: Create a new registry card or append a proposed version to an existing card
+      description: The operation never changes the canonical version. Every submitted version requires administrator approval.
       security:
         - bearerAuth: []
       requestBody:
@@ -42,12 +43,12 @@ paths:
             schema:
               $ref: '#/components/schemas/CardSyncPayload'
       responses:
-        '200': { description: Existing card updated with a new version }
-        '201': { description: New card created }
+        '200': { description: Proposed version appended to an existing card }
+        '201': { description: New card and first proposed version created }
   /api/cards:
     get:
       operationId: listApprovedCards
-      summary: List approved complete cards
+      summary: List cards using only their approved canonical versions
       parameters:
         - in: query
           name: expansion
@@ -59,17 +60,17 @@ paths:
           name: limit
           schema: { type: integer, minimum: 1, maximum: 100 }
       responses:
-        '200': { description: Approved cards }
+        '200': { description: Approved canonical cards }
   /api/cards/random:
     get:
       operationId: getRandomApprovedCard
-      summary: Return one random complete approved card
+      summary: Return one random complete card using its approved canonical version
       parameters:
         - in: query
           name: expansion
           schema: { type: string }
       responses:
-        '200': { description: Random card or null when the registry is empty }
+        '200': { description: Random canonical card or null when the registry is empty }
 components:
   securitySchemes:
     bearerAuth:
@@ -80,16 +81,15 @@ components:
       type: object
       required: [syncKey, card, operator, version]
       properties:
-        syncKey: { type: string }
+        syncKey:
+          type: string
+          description: Stable identity for the card across every revision. Reuse this exact value when creating v2, v3, and later versions.
         card:
           type: object
           required: [slug, name]
           properties:
             slug: { type: string }
             name: { type: string }
-            status:
-              type: string
-              enum: [draft, generating, review, changes_requested, approved, archived]
             collectorNumber: { type: [string, 'null'] }
         operator:
           type: object
@@ -125,6 +125,10 @@ components:
           type: object
           required: [typeLine]
           properties:
+            status:
+              type: string
+              enum: [draft, generating, submitted, changes_requested]
+              description: GPTs may only create non-canonical proposed versions. Use submitted when ready for administrator review.
             manaCost: { type: [string, 'null'] }
             colorIdentity:
               type: array
