@@ -1,0 +1,142 @@
+openapi: 3.1.0
+info:
+  title: Shadow Group Card Registry API
+  version: 1.0.0
+servers:
+  - url: https://YOUR-VERCEL-DOMAIN.vercel.app
+paths:
+  /api/cards/sync:
+    get:
+      operationId: findCardInRegistry
+      summary: Verify whether a card already exists before creating or updating it
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: syncKey
+          schema: { type: string }
+        - in: query
+          name: slug
+          schema: { type: string }
+      responses:
+        '200':
+          description: Registry lookup result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists: { type: boolean }
+                  matches:
+                    type: array
+                    items: { type: object, additionalProperties: true }
+    post:
+      operationId: synchronizeCard
+      summary: Create a new registry card or append a new version to an existing card
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardSyncPayload'
+      responses:
+        '200': { description: Existing card updated with a new version }
+        '201': { description: New card created }
+  /api/cards:
+    get:
+      operationId: listApprovedCards
+      summary: List approved complete cards
+      parameters:
+        - in: query
+          name: expansion
+          schema: { type: string }
+        - in: query
+          name: callsign
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100 }
+      responses:
+        '200': { description: Approved cards }
+  /api/cards/random:
+    get:
+      operationId: getRandomApprovedCard
+      summary: Return one random complete approved card
+      parameters:
+        - in: query
+          name: expansion
+          schema: { type: string }
+      responses:
+        '200': { description: Random card or null when the registry is empty }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    CardSyncPayload:
+      type: object
+      required: [syncKey, card, operator, version]
+      properties:
+        syncKey: { type: string }
+        card:
+          type: object
+          required: [slug, name]
+          properties:
+            slug: { type: string }
+            name: { type: string }
+            status:
+              type: string
+              enum: [draft, generating, review, changes_requested, approved, archived]
+            collectorNumber: { type: [string, 'null'] }
+        operator:
+          type: object
+          required: [callsign, slug]
+          properties:
+            callsign: { type: string }
+            slug: { type: string }
+            displayName: { type: [string, 'null'] }
+            bio: { type: [string, 'null'] }
+            teamRole: { type: [string, 'null'] }
+        expansion:
+          anyOf:
+            - type: 'null'
+            - type: object
+              required: [code, name]
+              properties:
+                code: { type: string }
+                name: { type: string }
+                description: { type: [string, 'null'] }
+        facts:
+          type: array
+          items:
+            type: object
+            required: [category, fact]
+            properties:
+              category:
+                type: string
+                enum: [strength, weakness, personality, gear, appearance, quote, story, role, running_joke]
+              fact: { type: string }
+              source: { type: [string, 'null'] }
+              approved: { type: boolean }
+        version:
+          type: object
+          required: [typeLine]
+          properties:
+            manaCost: { type: [string, 'null'] }
+            colorIdentity:
+              type: array
+              items: { type: string }
+            typeLine: { type: string }
+            rulesText:
+              type: array
+              items: { type: string }
+            flavorText: { type: [string, 'null'] }
+            power: { type: [string, 'null'] }
+            toughness: { type: [string, 'null'] }
+            rarity: { type: [string, 'null'] }
+            factsSnapshot: { type: object, additionalProperties: true }
+            artPrompt: { type: [string, 'null'] }
+            rendererData: { type: object, additionalProperties: true }
