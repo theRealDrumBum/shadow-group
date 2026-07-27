@@ -3,30 +3,35 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LogIn, LogOut, ShieldCheck } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
-export function GoogleLoginButton() {
-  const [user, setUser] = useState<User | null>(null);
-  const [checkingSession, setCheckingSession] = useState(true);
+type GoogleLoginButtonProps = {
+  initiallyAuthenticated?: boolean;
+};
+
+export function GoogleLoginButton({ initiallyAuthenticated = false }: GoogleLoginButtonProps) {
+  const [authenticated, setAuthenticated] = useState(initiallyAuthenticated);
+  const [checkingSession, setCheckingSession] = useState(!initiallyAuthenticated);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
-      setCheckingSession(false);
-    });
+    if (!initiallyAuthenticated) {
+      supabase.auth.getUser().then(({ data }) => {
+        setAuthenticated(Boolean(data.user));
+        setCheckingSession(false);
+      });
+    }
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      setAuthenticated(Boolean(session?.user));
       setCheckingSession(false);
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [initiallyAuthenticated]);
 
   async function signIn() {
     setLoading(true);
@@ -59,10 +64,10 @@ export function GoogleLoginButton() {
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signOut();
+      const { error: authError } = await supabase.auth.signOut({ scope: "local" });
       if (authError) throw authError;
-      setUser(null);
-      window.location.assign("/");
+      setAuthenticated(false);
+      window.location.replace("/");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to sign out.");
       setLoading(false);
@@ -73,7 +78,7 @@ export function GoogleLoginButton() {
     return <button className="button ghost" type="button" disabled>Checking access...</button>;
   }
 
-  if (user) {
+  if (authenticated) {
     return (
       <span className="auth-control authenticated">
         <Link className="button ghost" href="/command">
