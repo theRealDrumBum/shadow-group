@@ -67,8 +67,12 @@ update public.cards
 set canonical_version_id = current_version_id
 where status = 'approved' and current_version_id is not null;
 
+-- PostgreSQL cannot remove or reorder columns through CREATE OR REPLACE VIEW.
+-- Drop the prior 002_card_sync definition before creating the canonical-only view.
+drop view if exists public.complete_cards;
+
 -- Public consumers see only cards that have an approved canonical version.
-create or replace view public.complete_cards as
+create view public.complete_cards as
 select
   c.id,
   c.slug,
@@ -100,3 +104,5 @@ join public.operators o on o.id = c.operator_id
 left join public.expansions e on e.id = c.expansion_id
 join public.card_versions v on v.id = c.canonical_version_id
 where v.status = 'approved';
+
+grant select on public.complete_cards to anon, authenticated;
