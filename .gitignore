@@ -1,5 +1,3 @@
-.DS_Store
-
 # dependencies
 /node_modules
 
@@ -8,16 +6,18 @@
 /out/
 next-env.d.ts
 
+# production
+/build
+
+# env files
+.env
+.env*.local
+
 # debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-supabase/.temp/cli-latest
-supabase/.temp/gotrue-version
-supabase/.temp/pooler-url
-supabase/.temp/postgres-version
-supabase/.temp/project-ref
-supabase/.temp/rest-version
-supabase/.temp/storage-migration
-supabase/.temp/storage-version
+# misc
+.DS_Store
+*.pem
