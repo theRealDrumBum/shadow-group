@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { publicCardAssetUrl } from "@/lib/card-registry";
+
+type CardRow = { image_path?: string | null } & Record<string, unknown>;
+
+function withRenderUrl(rows: CardRow[]) {
+  return rows.map((row) => ({ ...row, render_url: publicCardAssetUrl(row.image_path) }));
+}
 
 export const dynamic = "force-dynamic";
 
@@ -30,8 +37,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unable to load cards." }, { status: 500 });
     }
 
+    const cards = withRenderUrl((data ?? []) as CardRow[]);
+
     return NextResponse.json(
-      { cards: data ?? [], count: data?.length ?? 0 },
+      { cards, count: cards.length },
       {
         headers: {
           "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300"
