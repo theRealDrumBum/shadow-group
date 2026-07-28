@@ -1,1 +1,41 @@
 .command-page{min-height:100vh}.page-title{font:900 clamp(56px,7vw,96px)/.9 'Barlow Condensed';text-transform:uppercase;margin:18px 0 20px}.command-page>p,.command-heading p{max-width:780px;color:var(--muted);line-height:1.7}.command-heading{display:flex;justify-content:space-between;gap:40px;align-items:flex-start;margin-bottom:42px}.command-identity{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:18px 20px;min-width:280px;display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:center}.command-identity svg{grid-row:1/3;color:var(--olive2)}.command-identity span{font:800 17px 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase}.command-identity small{color:var(--muted)}.command-modules{grid-template-columns:repeat(4,1fr);margin-bottom:42px}.command-module{min-height:230px}.command-module .module-state{display:flex;align-items:center;gap:7px}.command-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}.admin-list-panel{transform:none;padding:10px}.admin-list{border:1px solid rgba(255,255,255,.07)}.admin-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015)}.admin-row:last-child{border-bottom:0}.admin-row:hover{background:rgba(173,104,212,.06)}.admin-row div{display:grid;gap:3px}.admin-row strong{font:800 17px 'Barlow Condensed';letter-spacing:.05em;text-transform:uppercase}.admin-row span{color:var(--muted);font-size:12px}.admin-row em{font:800 11px 'Barlow Condensed';font-style:normal;text-transform:uppercase;letter-spacing:.11em;color:var(--olive2)}.admin-empty{padding:24px;color:var(--muted)}.admin-list-panel .panel-footer{align-items:center}.admin-list-panel .panel-footer a{color:var(--olive2)}.command-summary-panel .console-grid{min-height:260px}.admin-table{margin:28px 0 46px;border:1px solid var(--line);background:rgba(10,12,10,.75)}.admin-table-head,.admin-table-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line);align-items:center}.admin-table-head{font:800 11px 'Barlow Condensed';letter-spacing:.14em;color:var(--muted);background:rgba(255,255,255,.025)}.admin-table-row:last-child{border-bottom:0}.admin-table-row.five{grid-template-columns:1.1fr 1.5fr 1fr 1.5fr .6fr}.admin-table-row strong{font:800 16px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.05em}.admin-table-row span{color:#bbb9aa;font-size:13px}.admin-table-row em{font:800 11px 'Barlow Condensed';font-style:normal;text-transform:uppercase;letter-spacing:.1em;color:var(--olive2)}.command-page h2{font-size:42px;margin-top:54px}.notice{margin:26px 0;padding:18px;border-left:3px solid var(--olive);background:rgba(139,79,179,.08);color:var(--muted);line-height:1.6}@media(max-width:1100px){.command-modules{grid-template-columns:1fr 1fr}.command-grid{grid-template-columns:1fr}}@media(max-width:720px){.command-heading{flex-direction:column}.command-identity{min-width:0;width:100%}.command-modules{grid-template-columns:1fr}.admin-table{overflow-x:auto}.admin-table-head,.admin-table-row{min-width:760px}.command-page{padding-left:18px;padding-right:18px}}
+
+/* Status pills */
+.status-pill{font:800 10px 'Barlow Condensed';letter-spacing:.12em;padding:3px 8px;border:1px solid var(--line);color:var(--purple2);text-transform:uppercase}
+.status-approved{color:#8fd39a;border-color:rgba(143,211,154,.5)}
+.status-rejected{color:#d98b8b;border-color:rgba(217,139,139,.5)}
+.status-pending{color:var(--purple2);border-color:var(--shadow-border)}
+
+/* Events console */
+.events-console{display:grid;gap:18px;margin-top:24px}
+.import-panel{padding:18px}
+.import-panel .form-hint{color:var(--muted);font-size:13px;line-height:1.5;margin:6px 0 12px}
+.import-row{display:flex;gap:10px;flex-wrap:wrap}
+.import-row input{flex:1;min-width:240px;padding:11px 12px;background:rgba(0,0,0,.32);border:1px solid var(--line);color:var(--text);font:400 14px Inter}
+.import-row input:focus{outline:none;border-color:var(--purple2)}
+.form-success{color:#8fd39a;font-size:13px;margin-top:10px}
+.events-list{display:grid;gap:16px}
+.event-item{display:flex;gap:0;overflow:hidden;padding:0}
+.event-cover{width:200px;flex:0 0 auto;background:rgba(0,0,0,.3)}
+.event-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.event-body{padding:16px 18px;flex:1;min-width:0}
+.event-head{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.event-head h3{font:800 22px 'Barlow Condensed';text-transform:uppercase;margin:0;letter-spacing:.02em}
+.event-meta{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:13px;margin:8px 0}
+.event-meta span,.event-meta a{display:inline-flex;align-items:center;gap:5px}
+.event-meta a{color:var(--purple2)}
+.rsvp-counts{color:var(--text);font-size:13px;margin:6px 0 10px}
+.rsvp-counts strong{color:var(--purple2)}
+.rsvp-actions{display:flex;gap:8px;flex-wrap:wrap}
+.rsvp-actions .button.rsvp-active{border-color:var(--purple2);color:var(--purple2);background:rgba(139,79,179,.16)}
+.attendance-panel{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.attendance-panel summary{cursor:pointer;color:var(--purple2);font:700 12px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase}
+.attendance-list{display:grid;gap:8px;margin-top:10px}
+.attendance-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.attendance-name{min-width:140px;font-size:13px}
+.attendance-actions{display:flex;gap:6px;margin-left:auto}
+.chip{padding:4px 10px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font:700 10px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase}
+.chip-on{border-color:rgba(143,211,154,.6);color:#8fd39a}
+.chip-off{border-color:rgba(217,139,139,.6);color:#d98b8b}
+.admin-table-head.roster-row,.admin-table-row.roster-row{grid-template-columns:1fr 1.3fr .8fr 1.1fr .9fr .55fr .7fr .55fr;min-width:860px}
+@media(max-width:720px){.event-item{flex-direction:column}.event-cover{width:100%;height:170px}}
