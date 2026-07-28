@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { publicCardAssetUrl } from "@/lib/card-registry";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ card: null, count: 0 }, { status: 200 });
     }
 
-    const card = data[Math.floor(Math.random() * data.length)];
+    const picked = data[Math.floor(Math.random() * data.length)] as { image_path?: string | null };
+    const card = { ...picked, render_url: publicCardAssetUrl(picked.image_path) };
     return NextResponse.json(
       { card, count: data.length },
       { headers: { "Cache-Control": "no-store" } }
