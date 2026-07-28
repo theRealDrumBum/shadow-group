@@ -1,0 +1,196 @@
+# Shadow Group Cardsmith — Custom GPT Setup Guide
+
+This guide walks you through connecting a custom ChatGPT ("GPT") to the Shadow
+Group Card Registry API so the GPT can create cards, propose new versions, and
+check approval status — while **only a Shadow Group administrator** can approve a
+version and publish it to the public Card Gallery.
+
+You do **not** need to write code. You do need:
+
+- The deployed site URL (your Vercel domain).
+- Access to the Vercel project settings (to set environment variables).
+- Access to the Supabase project (to run migrations and copy keys).
+- A ChatGPT account that can create GPTs (ChatGPT Plus/Team/Enterprise, or a
+  Business plan for Actions).
+
+---
+
+## 1. How the system works (the workflow)
+
+```
+Custom GPT ──(Bearer CARD_SYNC_API_KEY)──▶ POST /api/cards/sync
+   creates a card OR appends a new version   → status: submitted (never canon)
+
+Admin ──(signed in on the website)──▶ /command/cards
+   Approve / Request changes / Reject a version
+   Approving sets it as the canonical version and publishes it
+
+Custom GPT ──(Bearer CARD_SYNC_API_KEY)──▶ GET /api/cards/sync?syncKey=...
+   reads each version's status + review_notes → iterates on rejections
+
+Public ──▶ Card Gallery (/cards) shows only approved canonical versions
+```
+
+Key rules the API enforces:
+
+- The sync endpoint can only create `draft`, `generating`, `submitted`, or
+  `changes_requested` versions. It **cannot** approve, reject, or archive.
+- Approval is a separate, authenticated admin-only action.
+- Each card has a stable `sync_key`; re-sending the same `sync_key` appends a new
+  version instead of creating a duplicate card.
+- The public gallery and `/api/cards*` read endpoints only ever return the
+  **approved canonical** version of a card.
+
+---
+
+## 2. Deploy and configure the backend
+
+### 2a. Run the database migrations
+
+Apply everything in `supabase/migrations/` to your Supabase project (in order).
+With the Supabase CLI:
+
+```bash
+supabase link --project-ref <your-project-ref>
+supabase db push
+```
+
+This creates the `cards`, `card_versions`, `operators`, `expansions`,
+`card_assets` tables, the approval workflow, row-level security, and the public
+`complete_cards` view used by the gallery.
+
+### 2b. Generate the GPT API key
+
+Create a strong random key the GPT will send on every request:
+
+```bash
+openssl rand -hex 32
+```
+
+Copy the output — this is your `CARD_SYNC_API_KEY`.
+
+### 2c. Set environment variables in Vercel
+
+In the Vercel project → **Settings → Environment Variables**, add (Production and
+Preview):
+
+| Variable | Where to find it | Used for |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API → Project URL | Client + server reads |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → anon public key | Public reads, login |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → service_role key (keep secret) | Server-side sync + admin |
+| `CARD_SYNC_API_KEY` | The value from step 2b | Authenticates the GPT |
+
+> `NEXT_PUBLIC_*` values are embedded at **build time** — after adding them,
+> trigger a redeploy so the client picks them up.
+
+Redeploy the project after saving.
+
+### 2d. Bootstrap the administrator
+
+Admin approval requires a Supabase profile with `role = 'admin'` and
+`account_status = 'approved'`. Migration `008` seeds `matt.c.ward@gmail.com` as the
+bootstrap admin via the `allowed_accounts` table. To add another admin, insert a
+row into `allowed_accounts` with `role = 'admin'`, then have that person sign in
+with Google once so their profile is provisioned.
+
+---
+
+## 3. Create the custom GPT
+
+1. Open ChatGPT → **Explore GPTs → Create** (or go to
+   <https://chatgpt.com/gpts/editor>).
+2. Switch to the **Configure** tab.
+3. **Name**: `Shadow Group Cardsmith`.
+4. **Description**: `Designs, revises, and syncs Shadow Group trading cards.`
+5. **Instructions**: paste the full contents of
+   [`custom-gpt-instructions.md`](./custom-gpt-instructions.md). These tell the
+   GPT how to build `sync_key`s, always look up before creating, never claim a
+   card is canon, and how to iterate on rejections.
+6. **Capabilities**: enable *Web Browsing* and *Image Generation* only if you
+   want the GPT to generate card art. They are not required for the API.
+
+---
+
+## 4. Add the Action (connect the API)
+
+1. In the GPT editor, scroll to **Actions → Create new action**.
+2. **Authentication → Authentication Type: API Key**
+   - **API Key**: paste your `CARD_SYNC_API_KEY`.
+   - **Auth Type: Bearer**.
+   - Save. (ChatGPT will send `Authorization: Bearer <key>` on every call.)
+3. **Schema**: paste the contents of
+   [`card-sync-openapi.yaml`](./card-sync-openapi.yaml).
+4. **Edit the server URL**: in the pasted schema, change
+
+   ```yaml
+   servers:
+     - url: https://YOUR-VERCEL-DOMAIN.vercel.app
+   ```
+
+   to your real deployed domain (for example
+   `https://shadow-group.vercel.app`). This must be the live HTTPS URL — the
+   Action cannot call `localhost`.
+5. ChatGPT will list the available operations:
+   - `findCardInRegistry` — `GET /api/cards/sync`
+   - `synchronizeCard` — `POST /api/cards/sync`
+   - `listApprovedCards` — `GET /api/cards`
+   - `getRandomApprovedCard` — `GET /api/cards/random`
+   - `lookupApprovedCard` — `GET /api/cards/lookup`
+
+### Test it
+
+Use the **Test** button on `findCardInRegistry` with a `syncKey` like
+`shadow-group:sins:sins-combat-controller`. A `200` with
+`{"exists": false, "matches": []}` (or a match) means auth and the URL are
+correct. A `401` means the API key is wrong; a `404`/`DNS` error means the server
+URL is wrong.
+
+---
+
+## 5. The approval loop (admin + GPT)
+
+1. The GPT submits a card: `POST /api/cards/sync` with `version.status = "submitted"`.
+2. An administrator signs in on the website and opens **Command Center →
+   Card workflow** (`/command/cards`). Submitted versions show **Approve as
+   canon**, **Request changes**, and **Reject** buttons. Notes entered here are
+   stored as `review_notes`.
+3. Approving sets that version as the card's canonical version, marks the card
+   `approved`, and it appears in the public **Card Gallery** (`/cards`).
+4. If changes are requested or the card is rejected, the GPT calls
+   `GET /api/cards/sync?syncKey=...`, reads each version's `status` and
+   `review_notes`, fixes the issues, and `POST`s a new version with the **same**
+   `sync_key`.
+
+---
+
+## 6. Distribute the GPT
+
+In the GPT editor → **Share**:
+
+- **Anyone with the link** — good for a small team; anyone with the link can use
+  it (and therefore can submit cards through your API).
+- **Publish to the GPT Store** — public discovery (requires a verified builder
+  profile).
+
+> **Security note:** whoever can use the GPT can submit cards via your API key
+> (the key is stored inside the Action, not shown to users). They still cannot
+> approve or publish anything — that stays admin-only. If the key is ever
+> exposed or misused, generate a new `CARD_SYNC_API_KEY`, update it in Vercel,
+> redeploy, and update the Action's API key.
+
+---
+
+## 7. Quick reference
+
+| Endpoint | Method | Auth | Purpose |
+| --- | --- | --- | --- |
+| `/api/cards/sync` | GET | Bearer `CARD_SYNC_API_KEY` | Look up a card + all versions/status/notes |
+| `/api/cards/sync` | POST | Bearer `CARD_SYNC_API_KEY` | Create a card or append a proposed version |
+| `/api/cards` | GET | none (public) | List approved canonical cards |
+| `/api/cards/random` | GET | none (public) | One random approved card |
+| `/api/cards/lookup` | GET | none (public) | Find approved cards by key/slug/name/callsign |
+| `/api/admin/card-versions/{id}/transition` | POST | Bearer admin session JWT | Approve/reject/request changes (admin app only) |
+
+Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, `CARD_SYNC_API_KEY`.

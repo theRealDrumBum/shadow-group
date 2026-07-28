@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { publicCardAssetUrl } from "@/lib/card-registry";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unable to search cards." }, { status: 500 });
     }
 
-    return NextResponse.json({ exists: Boolean(data?.length), matches: data ?? [] });
+    const matches = ((data ?? []) as Array<{ image_path?: string | null }>).map((row) => ({
+      ...row,
+      render_url: publicCardAssetUrl(row.image_path)
+    }));
+
+    return NextResponse.json({ exists: Boolean(matches.length), matches });
   } catch (error) {
     console.error("Card lookup configuration failed", error);
     return NextResponse.json({ error: "Card API is not configured." }, { status: 503 });
