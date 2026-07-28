@@ -8,7 +8,15 @@ paths:
   /api/cards/sync:
     get:
       operationId: findCardInRegistry
-      summary: Verify whether a card already exists before creating a card or proposing a new version
+      summary: Look up a card and read every version's approval status and reviewer notes
+      description: >
+        Call this before creating a card or proposing a new version, and again
+        after submitting to check review status. The response includes the full
+        card record with every version under `card_versions`, each carrying its
+        `status` (draft, generating, submitted, changes_requested, approved,
+        rejected, archived), `review_notes` (why an administrator requested
+        changes or rejected it), and `version_number`. Use `review_notes` to
+        understand what to fix, then resubmit a new version with the same syncKey.
       security:
         - bearerAuth: []
       parameters:
@@ -29,7 +37,28 @@ paths:
                   exists: { type: boolean }
                   matches:
                     type: array
-                    items: { type: object, additionalProperties: true }
+                    items:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        id: { type: string }
+                        sync_key: { type: string }
+                        slug: { type: string }
+                        name: { type: string }
+                        status: { type: string }
+                        canonical_version_id: { type: [string, 'null'] }
+                        current_version_id: { type: [string, 'null'] }
+                        card_versions:
+                          type: array
+                          items:
+                            type: object
+                            additionalProperties: true
+                            properties:
+                              id: { type: string }
+                              version_number: { type: integer }
+                              status: { type: string }
+                              review_notes: { type: [string, 'null'] }
+        '401': { description: Missing or invalid API key }
     post:
       operationId: synchronizeCard
       summary: Create a new registry card or append a proposed version to an existing card
@@ -60,17 +89,52 @@ paths:
           name: limit
           schema: { type: integer, minimum: 1, maximum: 100 }
       responses:
-        '200': { description: Approved canonical cards }
+        '200': { description: Approved canonical cards, each including a resolved render_url when artwork exists }
   /api/cards/random:
     get:
       operationId: getRandomApprovedCard
       summary: Return one random complete card using its approved canonical version
+      description: Each card includes a resolved `render_url` for its primary artwork when available.
       parameters:
         - in: query
           name: expansion
           schema: { type: string }
       responses:
-        '200': { description: Random canonical card or null when the registry is empty }
+        '200': { description: Random canonical card (with render_url) or null when the registry is empty }
+  /api/cards/lookup:
+    get:
+      operationId: lookupApprovedCard
+      summary: Public lookup of approved cards by syncKey, slug, name, or callsign
+      description: >
+        Returns only approved canonical cards from the public gallery view.
+        Unlike /api/cards/sync, this endpoint never exposes unapproved drafts and
+        does not require the API key. Each match includes a resolved `render_url`.
+      parameters:
+        - in: query
+          name: syncKey
+          schema: { type: string }
+        - in: query
+          name: slug
+          schema: { type: string }
+        - in: query
+          name: name
+          schema: { type: string }
+        - in: query
+          name: callsign
+          schema: { type: string }
+      responses:
+        '200':
+          description: Approved cards matching the query
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists: { type: boolean }
+                  matches:
+                    type: array
+                    items: { type: object, additionalProperties: true }
+        '400': { description: No query parameter provided }
 components:
   securitySchemes:
     bearerAuth:
