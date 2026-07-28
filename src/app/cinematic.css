@@ -1,13 +1,269 @@
 /* Shadow Group homepage rebuilt to match the approved cinematic reference. */
-.home-shell{background:#080909;overflow:hidden}
-.cinematic-header{height:76px!important;padding:0 max(4vw,28px)!important;background:rgba(4,5,6,.96)!important;border-bottom:1px solid rgba(122,86,132,.32)!important;box-shadow:0 14px 40px rgba(0,0,0,.45)!important}.cinematic-header .brand{gap:12px!important}.cinematic-header .brand img{width:54px!important;height:54px!important;mix-blend-mode:screen;filter:drop-shadow(0 0 14px rgba(117,79,128,.34))!important}.cinematic-header .brand strong{font-size:22px!important;letter-spacing:.16em!important}.cinematic-header .brand small{color:#7f568d!important;letter-spacing:.25em!important}.cinematic-header nav{gap:24px!important;font:700 12px 'Barlow Condensed'!important;letter-spacing:.12em!important}.cinematic-header nav>a{position:relative;padding:27px 0 24px}.cinematic-header nav>a:hover:after{content:"";position:absolute;left:0;right:0;bottom:16px;height:2px;background:var(--olive)}
-.reference-hero{min-height:650px;display:grid;grid-template-columns:minmax(330px,.8fr) minmax(430px,.85fr) minmax(460px,1.05fr);position:relative;isolation:isolate;border-bottom:1px solid rgba(112,74,125,.28);background:linear-gradient(90deg,#070808 0%,#070808 22%,rgba(7,8,8,.96) 42%,rgba(7,8,8,.40) 65%,rgba(7,8,8,.06) 100%),linear-gradient(180deg,rgba(5,6,6,.02),rgba(5,6,6,.20) 65%,#080909 100%)}
-.reference-hero:before{content:"";position:absolute;inset:0;z-index:-2;background:url("https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&w=2400&q=92") 86% center/cover no-repeat;filter:saturate(.58) contrast(1.15)}
-.reference-hero:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 82% 34%,rgba(115,74,127,.22),transparent 25%),radial-gradient(circle at 73% 72%,rgba(145,145,91,.11),transparent 31%),repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 58px),repeating-linear-gradient(0deg,rgba(255,255,255,.013) 0 1px,transparent 1px 58px),linear-gradient(180deg,transparent 72%,#080909)}
-.reference-watermark{position:absolute;width:900px;height:900px;left:-390px;top:-210px;opacity:.07;mix-blend-mode:screen;filter:grayscale(1) contrast(1.45)}.reference-watermark img{object-fit:contain}
-.reference-logo-column{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;min-height:650px;padding:28px 0 52px}.reference-logo{width:min(540px,38vw);height:auto;mix-blend-mode:screen;filter:drop-shadow(0 34px 74px rgba(0,0,0,.92)) drop-shadow(0 0 24px rgba(112,73,123,.24))}.reference-motto{position:absolute;bottom:38px;padding:12px 34px;border:1px solid rgba(113,74,126,.62);background:rgba(6,7,8,.84);color:#8c6099;font:800 13px 'Barlow Condensed';letter-spacing:.28em;box-shadow:0 18px 42px rgba(0,0,0,.52)}
-.reference-copy-column{position:relative;z-index:3;align-self:center;max-width:590px;padding:42px 22px 64px;text-shadow:0 3px 22px rgba(0,0,0,.9)}.reference-eyebrow{display:flex;border-top:1px solid rgba(133,134,97,.35);border-bottom:1px solid rgba(133,134,97,.35);padding:8px 0;color:#aaa985;font:700 11px 'Barlow Condensed';letter-spacing:.16em}.reference-copy-column h1{margin:20px 0 8px;font:900 clamp(82px,7.6vw,132px)/.70 'Barlow Condensed';letter-spacing:-.055em;text-transform:uppercase}.reference-copy-column h1 span,.reference-copy-column h1 em{display:block}.reference-copy-column h1 span{color:#e9e7df}.reference-copy-column h1 em{color:#8f8f62;font-style:normal}.reference-subtitle{margin:18px 0;color:#81558e;font:800 clamp(17px,1.5vw,25px) 'Barlow Condensed';letter-spacing:.36em}.reference-copy-column p{max-width:520px;color:#b5b4ad;font-size:16px;line-height:1.6}.reference-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}.reference-actions .button.primary{background:#7f8060!important;border-color:#a2a377!important}.reference-actions .button.secondary{border-color:rgba(113,74,126,.75)!important;background:rgba(5,6,6,.44)!important}
-.reference-battlefield{position:relative;min-height:650px}.battlefield-status{position:absolute;right:34px;top:82px;display:grid;gap:12px}.battlefield-status span{min-width:150px;padding:12px 15px;border-left:2px solid rgba(133,134,97,.65);background:linear-gradient(90deg,rgba(7,8,8,.72),transparent);color:#898a7e;font:700 10px 'Barlow Condensed';letter-spacing:.16em}.battlefield-status strong{display:block;margin-top:4px;color:#a7a66d;font-size:15px;letter-spacing:.18em}
-.reference-launch-grid{position:relative;z-index:6;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:-28px;padding:0 max(6vw,34px) 18px;background:linear-gradient(180deg,transparent,#080909 40%)}.reference-launch-card{position:relative;min-height:216px;padding:24px 22px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;border:1px solid rgba(123,84,136,.42);border-top:3px solid rgba(113,75,127,.78);background:linear-gradient(180deg,rgba(7,8,8,.10),rgba(7,8,8,.96) 76%),url("https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=86") center/cover no-repeat;box-shadow:0 18px 45px rgba(0,0,0,.38),inset 0 0 0 1px rgba(255,255,255,.025);transition:transform .2s ease,border-color .2s ease}.reference-launch-card:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,61,112,.14),transparent 48%);pointer-events:none}.reference-launch-card>*{position:relative;z-index:1}.reference-launch-card svg{width:28px;height:28px;color:#989764;margin-bottom:auto}.reference-launch-card h2{margin:18px 0 6px;font:800 25px 'Barlow Condensed';text-transform:uppercase}.reference-launch-card p{margin:0 0 14px;color:#aaa99f;font-size:13px;line-height:1.45}.reference-launch-card span{display:flex;align-items:center;gap:8px;color:#a7a66e;font:800 11px 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase}.reference-launch-card:hover{transform:translateY(-5px);border-top-color:#a6a676}.reference-launch-card.card-2{background-position:72% center}.reference-launch-card.card-3{background-position:35% center}.reference-launch-card.card-4{background-position:84% center}.reference-launch-card.card-5{background-position:55% center}.reference-quote{padding:0 20px 34px;text-align:center;color:#765083;font:800 13px 'Barlow Condensed';letter-spacing:.30em;text-transform:uppercase}
-@media(max-width:1180px){.cinematic-header nav>a{display:none}.reference-hero{grid-template-columns:1fr 1fr}.reference-logo-column{min-height:500px}.reference-logo{width:min(520px,72vw)}.reference-copy-column{padding-right:40px}.reference-battlefield{grid-column:1/-1;min-height:300px;margin-top:-200px;pointer-events:none}.battlefield-status{display:none}.reference-launch-grid{grid-template-columns:repeat(2,1fr);margin-top:0}.reference-launch-card:last-child{grid-column:1/-1}}
-@media(max-width:720px){.cinematic-header{height:70px!important;padding:0 16px!important}.cinematic-header .brand strong{font-size:18px!important}.cinematic-header .brand img{width:46px!important;height:46px!important}.reference-hero{display:block;min-height:auto;padding-bottom:40px}.reference-logo-column{min-height:390px;padding:20px 0 42px}.reference-logo{width:92vw}.reference-motto{bottom:18px}.reference-copy-column{padding:24px 20px 48px;background:linear-gradient(90deg,rgba(6,7,7,.94),rgba(6,7,7,.54),transparent)}.reference-copy-column h1{font-size:68px}.reference-subtitle{letter-spacing:.22em}.reference-battlefield{min-height:260px;margin:0;background:linear-gradient(180deg,transparent,#080909)}.reference-launch-grid{grid-template-columns:1fr;padding:0 18px 18px}.reference-launch-card:last-child{grid-column:auto}.reference-quote{font-size:10px;letter-spacing:.16em;padding:8px 18px 30px}}
+.home-shell { background: #080909; overflow: hidden; }
+
+.cinematic-header {
+  height: 76px !important;
+  padding: 0 max(4vw, 28px) !important;
+  background: rgba(4, 5, 6, 0.96) !important;
+  border-bottom: 1px solid rgba(122, 86, 132, 0.32) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.cinematic-header .brand { gap: 12px !important; }
+.cinematic-header .brand img {
+  width: 54px !important;
+  height: 54px !important;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 14px rgba(117, 79, 128, 0.34)) !important;
+}
+.cinematic-header .brand strong { font-size: 22px !important; letter-spacing: 0.16em !important; }
+.cinematic-header .brand small { color: #7f568d !important; letter-spacing: 0.25em !important; }
+.cinematic-header nav {
+  gap: 24px !important;
+  font: 700 12px 'Barlow Condensed' !important;
+  letter-spacing: 0.12em !important;
+}
+.cinematic-header nav > a { position: relative; padding: 27px 0 24px; }
+.cinematic-header nav > a:hover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  height: 2px;
+  background: var(--olive);
+}
+
+.reference-hero {
+  min-height: 650px;
+  display: grid;
+  grid-template-columns: minmax(330px, 0.8fr) minmax(430px, 0.85fr) minmax(460px, 1.05fr);
+  position: relative;
+  isolation: isolate;
+  border-bottom: 1px solid rgba(112, 74, 125, 0.28);
+  background:
+    linear-gradient(90deg, #070808 0%, #070808 22%, rgba(7, 8, 8, 0.96) 42%, rgba(7, 8, 8, 0.40) 65%, rgba(7, 8, 8, 0.06) 100%),
+    linear-gradient(180deg, rgba(5, 6, 6, 0.02), rgba(5, 6, 6, 0.20) 65%, #080909 100%);
+}
+.reference-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: url('/shadow-group-battlefield.jpg') 86% center / cover no-repeat;
+  filter: saturate(0.58) contrast(1.15);
+}
+.reference-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 82% 34%, rgba(115, 74, 127, 0.22), transparent 25%),
+    radial-gradient(circle at 73% 72%, rgba(145, 145, 91, 0.11), transparent 31%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 58px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.013) 0 1px, transparent 1px 58px),
+    linear-gradient(180deg, transparent 72%, #080909);
+}
+.reference-watermark {
+  position: absolute;
+  width: 900px;
+  height: 900px;
+  left: -390px;
+  top: -210px;
+  opacity: 0.07;
+  mix-blend-mode: screen;
+  filter: grayscale(1) contrast(1.45);
+}
+.reference-watermark img { object-fit: contain; }
+.reference-logo-column {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 650px;
+  padding: 28px 0 52px;
+}
+.reference-logo {
+  width: min(540px, 38vw);
+  height: auto;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 34px 74px rgba(0, 0, 0, 0.92)) drop-shadow(0 0 24px rgba(112, 73, 123, 0.24));
+}
+.reference-motto {
+  position: absolute;
+  bottom: 38px;
+  padding: 12px 34px;
+  border: 1px solid rgba(113, 74, 126, 0.62);
+  background: rgba(6, 7, 8, 0.84);
+  color: #8c6099;
+  font: 800 13px 'Barlow Condensed';
+  letter-spacing: 0.28em;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.52);
+}
+.reference-copy-column {
+  position: relative;
+  z-index: 3;
+  align-self: center;
+  max-width: 590px;
+  padding: 42px 22px 64px;
+  text-shadow: 0 3px 22px rgba(0, 0, 0, 0.9);
+}
+.reference-eyebrow {
+  display: flex;
+  border-top: 1px solid rgba(133, 134, 97, 0.35);
+  border-bottom: 1px solid rgba(133, 134, 97, 0.35);
+  padding: 8px 0;
+  color: #aaa985;
+  font: 700 11px 'Barlow Condensed';
+  letter-spacing: 0.16em;
+}
+.reference-copy-column h1 {
+  margin: 20px 0 8px;
+  font: 900 clamp(82px, 7.6vw, 132px) / 0.70 'Barlow Condensed';
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+}
+.reference-copy-column h1 span,
+.reference-copy-column h1 em { display: block; }
+.reference-copy-column h1 span { color: #e9e7df; }
+.reference-copy-column h1 em { color: #8f8f62; font-style: normal; }
+.reference-subtitle {
+  margin: 18px 0;
+  color: #81558e;
+  font: 800 clamp(17px, 1.5vw, 25px) 'Barlow Condensed';
+  letter-spacing: 0.36em;
+}
+.reference-copy-column p {
+  max-width: 520px;
+  color: #b5b4ad;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.reference-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+.reference-actions .button.primary { background: #7f8060 !important; border-color: #a2a377 !important; }
+.reference-actions .button.secondary {
+  border-color: rgba(113, 74, 126, 0.75) !important;
+  background: rgba(5, 6, 6, 0.44) !important;
+}
+.reference-battlefield { position: relative; min-height: 650px; }
+.battlefield-status {
+  position: absolute;
+  right: 34px;
+  top: 82px;
+  display: grid;
+  gap: 12px;
+}
+.battlefield-status span {
+  min-width: 150px;
+  padding: 12px 15px;
+  border-left: 2px solid rgba(133, 134, 97, 0.65);
+  background: linear-gradient(90deg, rgba(7, 8, 8, 0.72), transparent);
+  color: #898a7e;
+  font: 700 10px 'Barlow Condensed';
+  letter-spacing: 0.16em;
+}
+.battlefield-status strong {
+  display: block;
+  margin-top: 4px;
+  color: #a7a66d;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+}
+.reference-launch-grid {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: -28px;
+  padding: 0 max(6vw, 34px) 18px;
+  background: linear-gradient(180deg, transparent, #080909 40%);
+}
+.reference-launch-card {
+  position: relative;
+  min-height: 216px;
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  border: 1px solid rgba(123, 84, 136, 0.42);
+  border-top: 3px solid rgba(113, 75, 127, 0.78);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.reference-launch-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(7, 8, 8, 0.10), rgba(7, 8, 8, 0.96) 76%),
+    linear-gradient(135deg, rgba(99, 61, 112, 0.14), transparent 48%);
+  pointer-events: none;
+}
+.reference-launch-card > * { position: relative; z-index: 1; }
+.reference-launch-card svg { width: 28px; height: 28px; color: #989764; margin-bottom: auto; }
+.reference-launch-card h2 { margin: 18px 0 6px; font: 800 25px 'Barlow Condensed'; text-transform: uppercase; }
+.reference-launch-card p { margin: 0 0 14px; color: #aaa99f; font-size: 13px; line-height: 1.45; }
+.reference-launch-card span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a7a66e;
+  font: 800 11px 'Barlow Condensed';
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.reference-launch-card:hover { transform: translateY(-5px); border-top-color: #a6a676; }
+.reference-launch-card.card-1 { background: url('/shadow-tile-1.jpg') center / cover no-repeat; }
+.reference-launch-card.card-2 { background: url('/shadow-tile-2.jpg') center / cover no-repeat; }
+.reference-launch-card.card-3 { background: url('/shadow-tile-3.jpg') center / cover no-repeat; }
+.reference-launch-card.card-4 { background: url('/shadow-tile-4.jpg') center / cover no-repeat; }
+.reference-launch-card.card-5 { background: url('/shadow-tile-5.jpg') center / cover no-repeat; }
+.reference-quote {
+  padding: 0 20px 34px;
+  text-align: center;
+  color: #765083;
+  font: 800 13px 'Barlow Condensed';
+  letter-spacing: 0.30em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1180px) {
+  .cinematic-header nav > a { display: none; }
+  .reference-hero { grid-template-columns: 1fr 1fr; }
+  .reference-logo-column { min-height: 500px; }
+  .reference-logo { width: min(520px, 72vw); }
+  .reference-copy-column { padding-right: 40px; }
+  .reference-battlefield {
+    grid-column: 1 / -1;
+    min-height: 300px;
+    margin-top: -200px;
+    pointer-events: none;
+  }
+  .battlefield-status { display: none; }
+  .reference-launch-grid { grid-template-columns: repeat(2, 1fr); margin-top: 0; }
+  .reference-launch-card:last-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 720px) {
+  .cinematic-header { height: 70px !important; padding: 0 16px !important; }
+  .cinematic-header .brand strong { font-size: 18px !important; }
+  .cinematic-header .brand img { width: 46px !important; height: 46px !important; }
+  .reference-hero { display: block; min-height: auto; padding-bottom: 40px; }
+  .reference-logo-column { min-height: 390px; padding: 20px 0 42px; }
+  .reference-logo { width: 92vw; }
+  .reference-motto { bottom: 18px; }
+  .reference-copy-column {
+    padding: 24px 20px 48px;
+    background: linear-gradient(90deg, rgba(6, 7, 7, 0.94), rgba(6, 7, 7, 0.54), transparent);
+  }
+  .reference-copy-column h1 { font-size: 68px; }
+  .reference-subtitle { letter-spacing: 0.22em; }
+  .reference-battlefield { min-height: 260px; margin: 0; background: linear-gradient(180deg, transparent, #080909); }
+  .reference-launch-grid { grid-template-columns: 1fr; padding: 0 18px 18px; }
+  .reference-launch-card:last-child { grid-column: auto; }
+  .reference-quote { font-size: 10px; letter-spacing: 0.16em; padding: 8px 18px 30px; }
+}
