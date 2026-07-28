@@ -1,57 +1,144 @@
-/* Shadow Group homepage rebuilt to match the approved cinematic reference. */
-.home-shell { background: #080909; overflow: hidden; }
+/* Shadow Group homepage — dark, cinematic, purple tactical treatment.
+   Single source of truth for the homepage above-the-fold experience.
+   Shared primitives (buttons, sections, canon panels, footer) live in globals.css. */
 
+.home-shell {
+  background: var(--shadow-black);
+  overflow: hidden;
+}
+
+/* ---------- Header ---------- */
 .cinematic-header {
-  height: 76px !important;
-  padding: 0 max(4vw, 28px) !important;
-  background: rgba(4, 5, 6, 0.96) !important;
-  border-bottom: 1px solid rgba(122, 86, 132, 0.32) !important;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45) !important;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 74px;
+  padding: 0 max(4vw, 26px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(6, 5, 9, 0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--shadow-border);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
 }
-.cinematic-header .brand { gap: 12px !important; }
+.cinematic-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .cinematic-header .brand img {
-  width: 54px !important;
-  height: 54px !important;
-  mix-blend-mode: screen;
-  filter: drop-shadow(0 0 14px rgba(117, 79, 128, 0.34)) !important;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(173, 104, 212, 0.4));
 }
-.cinematic-header .brand strong { font-size: 22px !important; letter-spacing: 0.16em !important; }
-.cinematic-header .brand small { color: #7f568d !important; letter-spacing: 0.25em !important; }
+.cinematic-header .brand span { display: block; }
+.cinematic-header .brand strong {
+  display: block;
+  font: 800 21px 'Barlow Condensed';
+  letter-spacing: 0.16em;
+  color: var(--shadow-text);
+}
+.cinematic-header .brand small {
+  display: block;
+  font: 600 10px 'Barlow Condensed';
+  letter-spacing: 0.26em;
+  color: var(--shadow-purple-bright);
+}
 .cinematic-header nav {
-  gap: 24px !important;
-  font: 700 12px 'Barlow Condensed' !important;
-  letter-spacing: 0.12em !important;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font: 700 12px 'Barlow Condensed';
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--shadow-text-muted);
 }
-.cinematic-header nav > a { position: relative; padding: 27px 0 24px; }
-.cinematic-header nav > a:hover::after {
+.cinematic-header nav > a {
+  position: relative;
+  padding: 26px 0;
+  transition: color 0.2s ease;
+}
+.cinematic-header nav > a:hover { color: var(--shadow-text); }
+.cinematic-header nav > a::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 16px;
+  bottom: 18px;
   height: 2px;
-  background: var(--olive);
+  background: var(--shadow-purple-bright);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+.cinematic-header nav > a:hover::after { transform: scaleX(1); }
+
+/* Authentication control (Google login / command center) inside the header */
+.auth-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.auth-control .button.ghost {
+  min-height: 40px;
+  border-color: var(--shadow-border);
+  background: rgba(139, 79, 179, 0.1);
+  color: var(--shadow-text);
+}
+.auth-control .button.ghost:hover {
+  border-color: var(--shadow-purple-bright);
+  background: rgba(139, 79, 179, 0.2);
+}
+.auth-signout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--shadow-border);
+  background: rgba(139, 79, 179, 0.1);
+  color: var(--shadow-text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.auth-signout:hover {
+  color: var(--shadow-purple-bright);
+  border-color: var(--shadow-purple-bright);
+}
+.auth-control small {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  color: #d79ea2;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
+/* ---------- Hero ---------- */
 .reference-hero {
-  min-height: 650px;
-  display: grid;
-  grid-template-columns: minmax(330px, 0.8fr) minmax(430px, 0.85fr) minmax(460px, 1.05fr);
   position: relative;
   isolation: isolate;
-  border-bottom: 1px solid rgba(112, 74, 125, 0.28);
-  background:
-    linear-gradient(90deg, #070808 0%, #070808 22%, rgba(7, 8, 8, 0.96) 42%, rgba(7, 8, 8, 0.40) 65%, rgba(7, 8, 8, 0.06) 100%),
-    linear-gradient(180deg, rgba(5, 6, 6, 0.02), rgba(5, 6, 6, 0.20) 65%, #080909 100%);
+  min-height: 660px;
+  display: grid;
+  grid-template-columns: minmax(210px, auto) minmax(300px, 540px) 1fr;
+  align-items: center;
+  gap: 2vw;
+  padding: 64px max(4vw, 28px) 96px;
+  border-bottom: 1px solid var(--shadow-border);
+  overflow: hidden;
 }
 .reference-hero::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -2;
-  background: url('/shadow-group-battlefield.jpg') 86% center / cover no-repeat;
-  filter: saturate(0.58) contrast(1.15);
+  background: url('/hero-background.jpg') right center / cover no-repeat;
 }
+/* Readability gradients + tactical grid lines + subtle purple battlefield glow */
 .reference-hero::after {
   content: "";
   position: absolute;
@@ -59,211 +146,326 @@
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 82% 34%, rgba(115, 74, 127, 0.22), transparent 25%),
-    radial-gradient(circle at 73% 72%, rgba(145, 145, 91, 0.11), transparent 31%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 58px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.013) 0 1px, transparent 1px 58px),
-    linear-gradient(180deg, transparent 72%, #080909);
+    repeating-linear-gradient(90deg, rgba(173, 104, 212, 0.06) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(0deg, rgba(173, 104, 212, 0.05) 0 1px, transparent 1px 72px),
+    linear-gradient(90deg, var(--shadow-black) 0%, rgba(5, 5, 7, 0.92) 34%, rgba(5, 5, 7, 0.55) 58%, rgba(5, 5, 7, 0.1) 100%),
+    linear-gradient(180deg, rgba(5, 5, 7, 0.42), transparent 30%, rgba(5, 5, 7, 0.25) 76%, var(--shadow-black) 100%),
+    radial-gradient(circle at 78% 42%, rgba(173, 104, 212, 0.2), transparent 45%);
 }
+
+/* Oversized emblem watermark behind the logo */
 .reference-watermark {
   position: absolute;
-  width: 900px;
-  height: 900px;
-  left: -390px;
-  top: -210px;
-  opacity: 0.07;
-  mix-blend-mode: screen;
-  filter: grayscale(1) contrast(1.45);
+  z-index: -1;
+  width: min(760px, 58vw);
+  height: min(760px, 58vw);
+  left: -9%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.06;
+  filter: grayscale(1) brightness(1.5);
+  pointer-events: none;
 }
 .reference-watermark img { object-fit: contain; }
+
 .reference-logo-column {
   position: relative;
   z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 650px;
-  padding: 28px 0 52px;
+  gap: 22px;
 }
 .reference-logo {
-  width: min(540px, 38vw);
+  width: min(340px, 26vw);
   height: auto;
-  mix-blend-mode: screen;
-  filter: drop-shadow(0 34px 74px rgba(0, 0, 0, 0.92)) drop-shadow(0 0 24px rgba(112, 73, 123, 0.24));
+  filter: drop-shadow(0 24px 60px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 26px rgba(139, 79, 179, 0.35));
 }
 .reference-motto {
-  position: absolute;
-  bottom: 38px;
-  padding: 12px 34px;
-  border: 1px solid rgba(113, 74, 126, 0.62);
-  background: rgba(6, 7, 8, 0.84);
-  color: #8c6099;
+  padding: 10px 30px;
+  border: 1px solid var(--shadow-purple);
+  background: rgba(10, 8, 14, 0.72);
+  color: var(--shadow-purple-bright);
   font: 800 13px 'Barlow Condensed';
-  letter-spacing: 0.28em;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.52);
+  letter-spacing: 0.3em;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5), inset 0 0 22px rgba(139, 79, 179, 0.12);
 }
+
 .reference-copy-column {
   position: relative;
   z-index: 3;
-  align-self: center;
-  max-width: 590px;
-  padding: 42px 22px 64px;
+  max-width: 560px;
   text-shadow: 0 3px 22px rgba(0, 0, 0, 0.9);
 }
 .reference-eyebrow {
-  display: flex;
-  border-top: 1px solid rgba(133, 134, 97, 0.35);
-  border-bottom: 1px solid rgba(133, 134, 97, 0.35);
+  display: inline-flex;
+  gap: 10px;
+  margin-bottom: 18px;
   padding: 8px 0;
-  color: #aaa985;
+  border-top: 1px solid var(--shadow-border);
+  border-bottom: 1px solid var(--shadow-border);
+  color: var(--shadow-purple-bright);
   font: 700 11px 'Barlow Condensed';
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
 }
 .reference-copy-column h1 {
-  margin: 20px 0 8px;
-  font: 900 clamp(82px, 7.6vw, 132px) / 0.70 'Barlow Condensed';
-  letter-spacing: -0.055em;
+  margin: 0 0 6px;
+  font: 900 clamp(76px, 8vw, 128px)/0.78 'Barlow Condensed';
+  letter-spacing: -0.05em;
   text-transform: uppercase;
+  /* Slightly distressed depth: dark drop + worn purple ambient glow */
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.55),
+    0 3px 14px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(173, 104, 212, 0.28);
 }
 .reference-copy-column h1 span,
-.reference-copy-column h1 em { display: block; }
-.reference-copy-column h1 span { color: #e9e7df; }
-.reference-copy-column h1 em { color: #8f8f62; font-style: normal; }
+.reference-copy-column h1 em { display: block; font-style: normal; }
+.reference-copy-column h1 span { color: var(--shadow-text); }
+.reference-copy-column h1 em { color: var(--shadow-purple-bright); }
 .reference-subtitle {
-  margin: 18px 0;
-  color: #81558e;
-  font: 800 clamp(17px, 1.5vw, 25px) 'Barlow Condensed';
-  letter-spacing: 0.36em;
+  margin: 16px 0;
+  color: var(--shadow-purple-bright);
+  font: 800 clamp(16px, 1.6vw, 24px) 'Barlow Condensed';
+  letter-spacing: 0.34em;
 }
 .reference-copy-column p {
-  max-width: 520px;
-  color: #b5b4ad;
+  max-width: 500px;
+  color: var(--shadow-text-muted);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
-.reference-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
-.reference-actions .button.primary { background: #7f8060 !important; border-color: #a2a377 !important; }
-.reference-actions .button.secondary {
-  border-color: rgba(113, 74, 126, 0.75) !important;
-  background: rgba(5, 6, 6, 0.44) !important;
+.reference-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 28px;
 }
-.reference-battlefield { position: relative; min-height: 650px; }
+
+/* Battlefield status indicators (HTML, layered over the operators) */
 .battlefield-status {
   position: absolute;
-  right: 34px;
-  top: 82px;
+  z-index: 3;
+  right: max(4vw, 28px);
+  top: 100px;
   display: grid;
-  gap: 12px;
+  gap: 10px;
+  pointer-events: none;
 }
 .battlefield-status span {
-  min-width: 150px;
-  padding: 12px 15px;
-  border-left: 2px solid rgba(133, 134, 97, 0.65);
-  background: linear-gradient(90deg, rgba(7, 8, 8, 0.72), transparent);
-  color: #898a7e;
+  min-width: 176px;
+  padding: 11px 15px;
+  border-left: 2px solid var(--shadow-purple-bright);
+  background: linear-gradient(90deg, rgba(10, 8, 14, 0.82), rgba(10, 8, 14, 0.12));
+  backdrop-filter: blur(3px);
+  color: var(--shadow-text-muted);
   font: 700 10px 'Barlow Condensed';
   letter-spacing: 0.16em;
 }
 .battlefield-status strong {
   display: block;
   margin-top: 4px;
-  color: #a7a66d;
+  color: var(--shadow-purple-bright);
   font-size: 15px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
 }
+
+/* ---------- Launch cards ---------- */
 .reference-launch-grid {
   position: relative;
   z-index: 6;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-top: -28px;
-  padding: 0 max(6vw, 34px) 18px;
-  background: linear-gradient(180deg, transparent, #080909 40%);
+  gap: 14px;
+  margin-top: -46px;
+  padding: 0 max(4vw, 28px) 64px;
 }
 .reference-launch-card {
   position: relative;
-  min-height: 216px;
-  padding: 24px 22px;
+  min-height: 300px;
+  padding: 26px 22px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   overflow: hidden;
-  border: 1px solid rgba(123, 84, 136, 0.42);
-  border-top: 3px solid rgba(113, 75, 127, 0.78);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.025);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  border: 1px solid var(--shadow-border);
+  border-top: 3px solid var(--shadow-purple);
+  background-color: var(--shadow-surface);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.5);
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 .reference-launch-card::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(7, 8, 8, 0.10), rgba(7, 8, 8, 0.96) 76%),
-    linear-gradient(135deg, rgba(99, 61, 112, 0.14), transparent 48%);
+    linear-gradient(180deg, rgba(5, 5, 7, 0.12) 0%, rgba(5, 5, 7, 0.68) 55%, rgba(5, 5, 7, 0.97) 100%),
+    linear-gradient(135deg, rgba(139, 79, 179, 0.24), transparent 55%);
   pointer-events: none;
 }
 .reference-launch-card > * { position: relative; z-index: 1; }
-.reference-launch-card svg { width: 28px; height: 28px; color: #989764; margin-bottom: auto; }
-.reference-launch-card h2 { margin: 18px 0 6px; font: 800 25px 'Barlow Condensed'; text-transform: uppercase; }
-.reference-launch-card p { margin: 0 0 14px; color: #aaa99f; font-size: 13px; line-height: 1.45; }
-.reference-launch-card span {
-  display: flex;
+.reference-launch-card svg {
+  width: 30px;
+  height: 30px;
+  color: var(--shadow-purple-bright);
+  margin-bottom: auto;
+}
+.reference-launch-card h2 {
+  margin: 16px 0 6px;
+  font: 800 26px 'Barlow Condensed';
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--shadow-text);
+}
+.reference-launch-card p {
+  margin: 0 0 14px;
+  color: var(--shadow-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.reference-launch-card .card-action {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #a7a66e;
+  color: var(--shadow-purple-bright);
   font: 800 11px 'Barlow Condensed';
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.reference-launch-card:hover { transform: translateY(-5px); border-top-color: #a6a676; }
-.reference-launch-card.card-1 { background: url('/shadow-tile-1.jpg') center / cover no-repeat; }
-.reference-launch-card.card-2 { background: url('/shadow-tile-2.jpg') center / cover no-repeat; }
-.reference-launch-card.card-3 { background: url('/shadow-tile-3.jpg') center / cover no-repeat; }
-.reference-launch-card.card-4 { background: url('/shadow-tile-4.jpg') center / cover no-repeat; }
-.reference-launch-card.card-5 { background: url('/shadow-tile-5.jpg') center / cover no-repeat; }
-.reference-quote {
-  padding: 0 20px 34px;
-  text-align: center;
-  color: #765083;
-  font: 800 13px 'Barlow Condensed';
-  letter-spacing: 0.30em;
+.reference-launch-card:hover {
+  transform: translateY(-6px);
+  border-top-color: var(--shadow-purple-bright);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--shadow-purple);
+}
+.reference-launch-card.card-1 { background-image: url('/tile-roster.jpg'); }
+.reference-launch-card.card-2 { background-image: url('/tile-events.jpg'); }
+.reference-launch-card.card-3 { background-image: url('/tile-recruitment.jpg'); }
+.reference-launch-card.card-4 { background-image: url('/tile-sponsors.jpg'); }
+.reference-launch-card.card-5 { background-image: url('/tile-card-archive.jpg'); }
+
+/* ---------- Motto strip ---------- */
+.motto-strip {
+  position: relative;
+  overflow: hidden;
+  padding: 34px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: linear-gradient(90deg, var(--shadow-black), var(--shadow-purple-dark) 50%, var(--shadow-black));
+  border-top: 1px solid var(--shadow-border);
+  border-bottom: 1px solid var(--shadow-border);
+}
+.motto-strip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(173, 104, 212, 0.06) 0 1px, transparent 1px 46px),
+    radial-gradient(circle at 50% 50%, rgba(173, 104, 212, 0.22), transparent 62%);
+}
+.motto-strip .motto-line {
+  position: relative;
+  flex: 1;
+  max-width: 220px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--shadow-purple-bright));
+}
+.motto-strip .motto-line.right {
+  background: linear-gradient(90deg, var(--shadow-purple-bright), transparent);
+}
+.motto-strip .motto-line::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--shadow-purple-bright);
+  transform: translate(50%, -50%) rotate(45deg);
+}
+.motto-strip .motto-line.right::before { left: 0; right: auto; transform: translate(-50%, -50%) rotate(45deg); }
+.motto-strip h2 {
+  position: relative;
+  margin: 0;
+  color: var(--shadow-text);
+  font: 900 clamp(24px, 3vw, 42px) 'Barlow Condensed';
+  letter-spacing: 0.4em;
   text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(173, 104, 212, 0.5);
+  white-space: nowrap;
 }
 
+/* Homepage card-archive feature panel width */
+.card-project-panel { max-width: 520px; margin: 0 auto; }
+
+/* ---------- Responsive ---------- */
+/* Large tablet / small desktop (~1024px): two-column hero, two cards per row */
 @media (max-width: 1180px) {
-  .cinematic-header nav > a { display: none; }
-  .reference-hero { grid-template-columns: 1fr 1fr; }
-  .reference-logo-column { min-height: 500px; }
-  .reference-logo { width: min(520px, 72vw); }
-  .reference-copy-column { padding-right: 40px; }
-  .reference-battlefield {
-    grid-column: 1 / -1;
-    min-height: 300px;
-    margin-top: -200px;
-    pointer-events: none;
+  .reference-hero {
+    grid-template-columns: minmax(150px, auto) 1fr;
+    min-height: 560px;
+    padding-bottom: 80px;
   }
+  .reference-logo { width: min(220px, 22vw); }
   .battlefield-status { display: none; }
   .reference-launch-grid { grid-template-columns: repeat(2, 1fr); margin-top: 0; }
   .reference-launch-card:last-child { grid-column: 1 / -1; }
 }
 
-@media (max-width: 720px) {
-  .cinematic-header { height: 70px !important; padding: 0 16px !important; }
-  .cinematic-header .brand strong { font-size: 18px !important; }
-  .cinematic-header .brand img { width: 46px !important; height: 46px !important; }
-  .reference-hero { display: block; min-height: auto; padding-bottom: 40px; }
-  .reference-logo-column { min-height: 390px; padding: 20px 0 42px; }
-  .reference-logo { width: 92vw; }
-  .reference-motto { bottom: 18px; }
-  .reference-copy-column {
-    padding: 24px 20px 48px;
-    background: linear-gradient(90deg, rgba(6, 7, 7, 0.94), rgba(6, 7, 7, 0.54), transparent);
+/* Collapse the primary nav once it no longer fits comfortably */
+@media (max-width: 980px) {
+  .cinematic-header nav > a { display: none; }
+}
+
+/* Small tablet (~768px): stacked hero composition */
+@media (max-width: 820px) {
+  .reference-hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    text-align: left;
   }
-  .reference-copy-column h1 { font-size: 68px; }
+  .reference-logo-column { flex-direction: row; align-items: center; gap: 18px; }
+  .reference-logo { width: min(150px, 30vw); }
+}
+
+/* Mobile (~390px) */
+@media (max-width: 720px) {
+  .cinematic-header { height: 66px; padding: 0 16px; }
+  .cinematic-header .brand strong { font-size: 18px; }
+  .cinematic-header .brand img { width: 44px; height: 44px; }
+  .reference-hero { padding: 40px 18px 56px; min-height: auto; }
+  .reference-hero::before { background-position: 70% center; }
+  .reference-hero::after {
+    background:
+      linear-gradient(180deg, rgba(5, 5, 7, 0.7), rgba(5, 5, 7, 0.52) 45%, var(--shadow-black) 100%),
+      radial-gradient(circle at 70% 30%, rgba(173, 104, 212, 0.16), transparent 55%);
+  }
+  .reference-logo-column { flex-direction: column; align-items: flex-start; }
+  .reference-logo { width: min(180px, 42vw); }
+  .reference-copy-column h1 { font: 900 clamp(58px, 17vw, 84px)/0.82 'Barlow Condensed'; }
   .reference-subtitle { letter-spacing: 0.22em; }
-  .reference-battlefield { min-height: 260px; margin: 0; background: linear-gradient(180deg, transparent, #080909); }
-  .reference-launch-grid { grid-template-columns: 1fr; padding: 0 18px 18px; }
+  .reference-actions .button { flex: 1 1 auto; }
+  .reference-launch-grid { grid-template-columns: 1fr; padding: 0 16px 44px; }
+  .reference-launch-card { min-height: 240px; }
   .reference-launch-card:last-child { grid-column: auto; }
-  .reference-quote { font-size: 10px; letter-spacing: 0.16em; padding: 8px 18px 30px; }
+  .motto-strip { gap: 14px; }
+  .motto-strip .motto-line { max-width: 48px; }
+  .motto-strip h2 { letter-spacing: 0.22em; }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reference-launch-card,
+  .cinematic-header nav > a,
+  .cinematic-header nav > a::after,
+  .auth-control .button.ghost,
+  .auth-signout,
+  .text-link,
+  .button { transition: none; }
+  .reference-launch-card:hover { transform: none; }
 }

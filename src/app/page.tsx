@@ -15,42 +15,42 @@ import { createClient } from "@/lib/supabase/server";
 
 const launchTiles = [
   {
-    href: "/team",
+    href: "#team",
     title: "Team Roster",
-    text: "Meet the operators that make up Shadow Group.",
-    action: "View roster",
+    text: "Meet the operators who make up Shadow Group.",
+    action: "View Roster",
     imageClass: "card-1",
     icon: Users,
   },
   {
-    href: "/events",
+    href: "#events",
     title: "Events",
-    text: "See where we are deploying next and where Shadow Group will be on the field.",
-    action: "View events",
+    text: "See where Shadow Group is deploying next.",
+    action: "View Events",
     imageClass: "card-2",
     icon: CalendarDays,
   },
   {
-    href: "/recruitment",
+    href: "#recruitment",
     title: "Recruitment",
-    text: "Think you have what it takes? Submit an application to join the team.",
-    action: "Apply now",
+    text: "Think you have what it takes? Apply to join the team.",
+    action: "Apply Now",
     imageClass: "card-3",
     icon: Crosshair,
   },
   {
-    href: "/sponsors",
+    href: "#partners",
     title: "Sponsors",
-    text: "Partners, affiliate gear, and brands that support Shadow Group.",
-    action: "Our sponsors",
+    text: "Partners, affiliate gear, and brands supporting the team.",
+    action: "Our Sponsors",
     imageClass: "card-4",
     icon: Handshake,
   },
   {
     href: "/cards",
     title: "Card Archive",
-    text: "Browse the approved team card side project and canon entries.",
-    action: "View archive",
+    text: "Browse the approved Shadow Group card project.",
+    action: "View Archive",
     imageClass: "card-5",
     icon: Camera,
   },
@@ -86,7 +86,7 @@ export default async function Home() {
 
       <section id="top" className="reference-hero">
         <div className="reference-watermark" aria-hidden="true">
-          <Image src="/shadow_group_logo.png" fill alt="" priority />
+          <Image src="/shadow_group_logo.png" fill alt="" priority sizes="760px" />
         </div>
 
         <div className="reference-logo-column">
@@ -109,38 +109,36 @@ export default async function Home() {
           </h1>
           <div className="reference-subtitle">AIRSOFT MILSIM TEAM</div>
           <p>
-            We are Shadow Group, an airsoft milsim team built on discipline, teamwork, and fieldcraft.
-            D4 is one of our home fields, and American Milsim is our primary event circuit.
+            We are Shadow Group, an airsoft milsim team built on discipline, teamwork, fieldcraft, and
+            brotherhood. D4 is one of our home fields, and American Milsim is our primary event circuit.
           </p>
           <div className="reference-actions">
-            <Link className="button primary" href="/team">
-              Meet the team <ArrowUpRight size={17} />
+            <Link className="button primary" href="#team">
+              Meet the Team <ArrowUpRight size={17} />
             </Link>
-            <Link className="button secondary" href="/events">
-              Upcoming events <ArrowUpRight size={17} />
+            <Link className="button secondary" href="#events">
+              Upcoming Events <ArrowUpRight size={17} />
             </Link>
           </div>
         </div>
 
-        <div className="reference-battlefield" aria-label="Shadow Group battlefield visual">
-          <div className="battlefield-status">
-            <span>
-              TEAM STATUS
-              <strong>ACTIVE</strong>
-            </span>
-            <span>
-              HOME FIELD
-              <strong>D4 AIRSOFT</strong>
-            </span>
-            <span>
-              PRIMARY CIRCUIT
-              <strong>AMERICAN MILSIM</strong>
-            </span>
-            <span>
-              SESSION
-              <strong>{user ? "ACTIVE" : "PUBLIC"}</strong>
-            </span>
-          </div>
+        <div className="battlefield-status" aria-label="Team status">
+          <span>
+            TEAM STATUS
+            <strong>ACTIVE</strong>
+          </span>
+          <span>
+            HOME FIELD
+            <strong>D4 AIRSOFT</strong>
+          </span>
+          <span>
+            PRIMARY CIRCUIT
+            <strong>AMERICAN MILSIM</strong>
+          </span>
+          <span>
+            SESSION
+            <strong>{user ? "ACTIVE" : "PUBLIC"}</strong>
+          </span>
         </div>
       </section>
 
@@ -150,14 +148,18 @@ export default async function Home() {
             <Icon />
             <h2>{title}</h2>
             <p>{text}</p>
-            <span>
+            <span className="card-action">
               {action} <ArrowUpRight size={14} />
             </span>
           </Link>
         ))}
       </section>
 
-      <div className="reference-quote">EX UMBRIS MORS</div>
+      <section className="motto-strip" aria-label="Team motto">
+        <span className="motto-line" aria-hidden="true" />
+        <h2>EX UMBRIS MORS</h2>
+        <span className="motto-line right" aria-hidden="true" />
+      </section>
 
       <section id="team" className="section archive-section">
         <div className="section-index">SECTION // 01</div>
