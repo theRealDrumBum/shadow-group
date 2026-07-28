@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Radio,
   ShieldCheck,
+  UserCog,
   Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -87,14 +88,20 @@ export default async function CommandPage() {
         <p>
           Signed in as {profile?.email ?? user.email}. Your current role is <strong>{role}</strong>.
         </p>
-        <p>Member-specific tools will be added here. Administrative modules are restricted to command staff.</p>
-        <Link href="/" className="button secondary">Return to team site</Link>
+        <p>
+          Keep your details on file with the team. Your private contact and medical information is stored
+          securely and never shown publicly; your public profile is reviewed before it goes live.
+        </p>
+        <div className="actions">
+          <Link href="/command/profile" className="button primary">Manage my profile</Link>
+          <Link href="/" className="button secondary">Return to team site</Link>
+        </div>
       </main>
     );
   }
 
   const adminClient = createSupabaseAdmin();
-  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult] = await Promise.all([
+  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult] = await Promise.all([
     adminClient
       .from("cards")
       .select("id,name,status,submitted_at,operators(callsign)")
@@ -114,6 +121,7 @@ export default async function CommandPage() {
     adminClient.from("brands").select("id", { count: "exact", head: true }).eq("is_active", true),
     adminClient.from("operator_social_links").select("id", { count: "exact", head: true }).eq("is_public", true),
     adminClient.from("recruitment_submissions").select("id", { count: "exact", head: true }).in("status", ["new", "reviewing"]),
+    adminClient.from("member_profile_submissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   const cards = (cardsResult.data ?? []) as CardRow[];
@@ -139,6 +147,12 @@ export default async function CommandPage() {
       detail: `${events.length} upcoming or staged events`,
       href: "/command/events",
       icon: CalendarDays,
+    },
+    {
+      title: "Profile approvals",
+      detail: `${profileSubsResult.count ?? 0} member profiles awaiting review`,
+      href: "/command/profile-review",
+      icon: UserCog,
     },
     {
       title: "Sponsors & social",
@@ -227,7 +241,7 @@ export default async function CommandPage() {
             <div><span>SOCIAL LINKS</span><strong>{socialResult.count ?? 0} PUBLIC</strong></div>
             <div><span>ACCOUNT</span><strong>ADMIN</strong></div>
           </div>
-          <div className="panel-footer"><Link href="/">VIEW PUBLIC SITE</Link><ExternalLink size={13} /></div>
+          <div className="panel-footer"><Link href="/command/profile">EDIT MY PROFILE</Link><Link href="/">VIEW PUBLIC SITE <ExternalLink size={12} /></Link></div>
         </article>
       </section>
     </main>
