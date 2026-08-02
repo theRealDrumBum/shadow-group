@@ -64,9 +64,13 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createSupabaseAdmin();
+    // `operators` is related to `cards` through two foreign keys
+    // (cards.operator_id and operators.dossier_card_id), so the embed must be
+    // disambiguated to the cards.operator_id relationship or PostgREST returns
+    // PGRST201 (ambiguous embedding).
     let query = supabase
       .from("cards")
-      .select("*, operators(*), card_versions(*), expansions(*)")
+      .select("*, operators!cards_operator_id_fkey(*), card_versions!card_versions_card_id_fkey(*), expansions(*)")
       .limit(10);
     if (syncKey) query = query.eq("sync_key", syncKey);
     if (slug) query = query.eq("slug", slug);
