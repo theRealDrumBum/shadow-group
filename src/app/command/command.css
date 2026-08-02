@@ -84,3 +84,27 @@
 .chip-off{border-color:rgba(217,139,139,.6);color:#d98b8b}
 .admin-table-head.roster-row,.admin-table-row.roster-row{grid-template-columns:1fr 1.3fr .8fr 1.1fr .9fr .55fr .7fr .55fr;min-width:860px}
 @media(max-width:720px){.event-item{flex-direction:column}.event-cover{width:100%;height:170px}}
+
+/* Admin roster + account managers */
+.roster-manager,.accounts-manager{display:grid;gap:16px;margin-top:22px}
+.roster-toolbar{display:flex;justify-content:flex-end}
+.roster-list{display:grid;gap:12px}
+.operator-card-editor{padding:14px 16px}
+.operator-card-editor>summary{cursor:pointer;display:flex;align-items:center;gap:14px;flex-wrap:wrap;list-style:none}
+.operator-card-editor>summary::-webkit-details-marker{display:none}
+.operator-summary-name{font:800 18px 'Barlow Condensed';letter-spacing:.04em;text-transform:uppercase}
+.operator-summary-meta{color:var(--muted);font-size:13px}
+.operator-summary-stats{margin-left:auto;display:flex;align-items:center;gap:12px}
+.operator-games{color:var(--muted);font-size:12px}
+.operator-form{display:grid;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.operator-form label,.account-editor label{display:flex;flex-direction:column;gap:6px;font:700 11px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.operator-form input,.operator-form textarea,.account-editor select,.account-editor input{width:100%;padding:9px 12px;background:rgba(0,0,0,.32);border:1px solid var(--line);color:var(--text);font:400 14px Inter;resize:vertical}
+.operator-form input:focus,.operator-form textarea:focus,.account-editor select:focus{outline:none;border-color:var(--purple2)}
+.checkbox-row{display:flex;gap:20px;flex-wrap:wrap;margin:4px 0}
+.checkbox{flex-direction:row!important;align-items:center;gap:8px!important;text-transform:none!important;letter-spacing:0!important;color:var(--text)!important;font:600 13px Inter!important}
+.checkbox input{width:auto!important}
+.accounts-list{display:grid;gap:14px;padding:6px}
+.account-editor{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:14px 16px}
+.account-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.account-head strong{display:block;font:800 16px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.04em}
+.account-head span{color:var(--muted);font-size:12px}

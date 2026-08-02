@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { RosterManager, type ManagedOperator } from "./roster-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,18 @@ type OperatorRow = {
   callsign: string;
   display_name: string | null;
   rank: string | null;
+  primary_role: string | null;
+  secondary_role: string | null;
   team_role: string | null;
-  is_public: boolean;
   joined_at: string | null;
+  display_order: number | null;
+  is_public: boolean;
+  is_featured: boolean;
+  active: boolean;
+  short_bio: string | null;
+  long_bio: string | null;
+  portrait_url: string | null;
+  roster_notes: string | null;
 };
 
 export default async function RosterPage() {
@@ -25,15 +35,18 @@ export default async function RosterPage() {
 
   const admin = createSupabaseAdmin();
   const [{ data: operators }, { data: profiles }, { data: rsvps }] = await Promise.all([
-    admin.from("operators").select("id,callsign,display_name,rank,team_role,is_public,joined_at").order("display_order", { ascending: true }),
-    admin.from("profiles").select("id,operator_id"),
+    admin.from("operators").select("id,callsign,display_name,rank,primary_role,secondary_role,team_role,joined_at,display_order,is_public,is_featured,active,short_bio,long_bio,portrait_url,roster_notes").order("display_order", { ascending: true }),
+    admin.from("profiles").select("id,operator_id,email"),
     admin.from("event_rsvps").select("profile_id,status,attended")
   ]);
 
-  // Map each profile to its operator, then tally attendance per operator.
   const operatorByProfile = new Map<string, string>();
-  for (const row of (profiles ?? []) as { id: string; operator_id: string | null }[]) {
-    if (row.operator_id) operatorByProfile.set(row.id, row.operator_id);
+  const emailByOperator = new Map<string, string>();
+  for (const row of (profiles ?? []) as { id: string; operator_id: string | null; email: string | null }[]) {
+    if (row.operator_id) {
+      operatorByProfile.set(row.id, row.operator_id);
+      if (row.email && !emailByOperator.has(row.operator_id)) emailByOperator.set(row.operator_id, row.email);
+    }
   }
   const games = new Map<string, number>();
   const noShows = new Map<string, number>();
@@ -44,31 +57,24 @@ export default async function RosterPage() {
     if (rsvp.status === "going" && rsvp.attended === false) noShows.set(operatorId, (noShows.get(operatorId) ?? 0) + 1);
   }
 
+  const managed: ManagedOperator[] = ((operators ?? []) as OperatorRow[]).map((operator) => ({
+    ...operator,
+    games: games.get(operator.id) ?? 0,
+    noShows: noShows.get(operator.id) ?? 0,
+    memberEmail: emailByOperator.get(operator.id) ?? null
+  }));
+
   return (
     <main className="section command-page">
       <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
       <span className="kicker">ADMIN MODULE // PERSONNEL</span>
       <h1 className="page-title">Roster management.</h1>
-      <p>Identity, rank, field role, patch date, public visibility, and game attendance — including who RSVP&apos;d yes but didn&apos;t show.</p>
-      <div className="admin-table">
-        <div className="admin-table-head roster-row"><span>CALLSIGN</span><span>NAME</span><span>RANK</span><span>ROLE</span><span>JOINED</span><span>GAMES</span><span>NO-SHOWS</span><span>PUBLIC</span></div>
-        {((operators ?? []) as OperatorRow[]).map((operator) => (
-          <div className="admin-table-row roster-row" key={operator.id}>
-            <strong>{operator.callsign}</strong>
-            <span>{operator.display_name ?? "—"}</span>
-            <span>{operator.rank ?? "—"}</span>
-            <span>{operator.team_role ?? "—"}</span>
-            <span>{operator.joined_at ?? "—"}</span>
-            <span>{games.get(operator.id) ?? 0}</span>
-            <span>{noShows.get(operator.id) ?? 0}</span>
-            <em>{operator.is_public ? "YES" : "NO"}</em>
-          </div>
-        ))}
-      </div>
-      <div className="notice">
-        Attendance is recorded from event RSVPs: administrators mark who actually attended on each event in the
-        Events module, which populates games played and no-show counts here.
-      </div>
+      <p>
+        Add operators and edit identity, rank/status, field role, patch date, bios, and public visibility.
+        Attendance (games played and RSVP&apos;d-but-no-show) is recorded from the Events module. Changes made
+        here publish to the public roster immediately when an operator is marked public.
+      </p>
+      <RosterManager operators={managed} />
     </main>
   );
 }

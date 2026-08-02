@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Radio,
   ShieldCheck,
+  UserCheck,
   UserCog,
   Users,
 } from "lucide-react";
@@ -101,7 +102,7 @@ export default async function CommandPage() {
   }
 
   const adminClient = createSupabaseAdmin();
-  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult] = await Promise.all([
+  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult, pendingAccountsResult] = await Promise.all([
     adminClient
       .from("cards")
       .select("id,name,status,submitted_at,operators(callsign)")
@@ -122,6 +123,7 @@ export default async function CommandPage() {
     adminClient.from("operator_social_links").select("id", { count: "exact", head: true }).eq("is_public", true),
     adminClient.from("recruitment_submissions").select("id", { count: "exact", head: true }).in("status", ["new", "reviewing"]),
     adminClient.from("member_profile_submissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("account_status", "pending"),
   ]);
 
   const cards = (cardsResult.data ?? []) as CardRow[];
@@ -141,6 +143,12 @@ export default async function CommandPage() {
       detail: `${operators.length} operators loaded`,
       href: "/command/roster",
       icon: Users,
+    },
+    {
+      title: "Accounts",
+      detail: `${pendingAccountsResult.count ?? 0} awaiting approval`,
+      href: "/command/accounts",
+      icon: UserCheck,
     },
     {
       title: "Events",
