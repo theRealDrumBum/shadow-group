@@ -106,11 +106,47 @@ export async function getGalleryCards(): Promise<GalleryResult> {
 
 /** A single approved card by slug, falling back to the sample roster. */
 export async function getGalleryCardBySlug(slug: string): Promise<OperatorCard | null> {
+  const detail = await getGalleryCardDetailBySlug(slug);
+  return detail?.card ?? null;
+}
+
+/** Extra approved-card metadata surfaced on the public detail page. */
+export type CardDetailExtras = {
+  rarity: string | null;
+  collectorNumber: string | null;
+  expansionCode: string | null;
+  expansionName: string | null;
+  publishedAt: string | null;
+};
+
+export type CardDetail = {
+  card: OperatorCard;
+  extras: CardDetailExtras;
+};
+
+const DETAIL_COLUMNS = `${COMPLETE_CARD_COLUMNS},expansion_name`;
+
+function mapRowToExtras(row: CompleteCardRow): CardDetailExtras {
+  return {
+    rarity: row.rarity ?? null,
+    collectorNumber: row.collector_number ?? null,
+    expansionCode: row.expansion_code ?? null,
+    expansionName: row.expansion_name ?? null,
+    publishedAt: row.published_at ?? null
+  };
+}
+
+/**
+ * A single approved card by slug with the extra metadata needed for the detail
+ * page. Falls back to the bundled sample roster (with empty extras) so the page
+ * renders even before Supabase is configured or populated.
+ */
+export async function getGalleryCardDetailBySlug(slug: string): Promise<CardDetail | null> {
   const supabase = getSupabase();
   if (supabase) {
     const { data, error } = await supabase
       .from("complete_cards")
-      .select(COMPLETE_CARD_COLUMNS)
+      .select(DETAIL_COLUMNS)
       .eq("slug", slug)
       .limit(1)
       .maybeSingle();
@@ -118,8 +154,15 @@ export async function getGalleryCardBySlug(slug: string): Promise<OperatorCard |
     if (error) {
       console.error("Unable to load card detail", error);
     } else if (data) {
-      return mapRowToCard(data as unknown as CompleteCardRow);
+      const row = data as unknown as CompleteCardRow;
+      return { card: mapRowToCard(row), extras: mapRowToExtras(row) };
     }
   }
-  return sampleCards.find((card) => card.slug === slug) ?? null;
+
+  const sample = sampleCards.find((card) => card.slug === slug);
+  if (!sample) return null;
+  return {
+    card: sample,
+    extras: { rarity: null, collectorNumber: null, expansionCode: null, expansionName: null, publishedAt: null }
+  };
 }
