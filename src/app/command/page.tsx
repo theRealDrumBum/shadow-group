@@ -15,12 +15,15 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-type CardRow = {
+type PendingVersionRow = {
   id: string;
-  name: string;
   status: string;
+  version_number: number;
   submitted_at: string | null;
-  operators: { callsign: string } | { callsign: string }[] | null;
+  cards:
+    | { id: string; name: string; status: string; operators: { callsign: string } | { callsign: string }[] | null }
+    | { id: string; name: string; status: string; operators: { callsign: string } | { callsign: string }[] | null }[]
+    | null;
 };
 
 type OperatorRow = {
@@ -103,9 +106,9 @@ export default async function CommandPage() {
   const adminClient = createSupabaseAdmin();
   const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult] = await Promise.all([
     adminClient
-      .from("cards")
-      .select("id,name,status,submitted_at,operators(callsign)")
-      .in("status", ["submitted", "changes_requested", "draft"])
+      .from("card_versions")
+      .select("id,status,version_number,submitted_at,cards!card_versions_card_id_fkey!inner(id,name,status,operators!cards_operator_id_fkey(callsign))")
+      .in("status", ["submitted", "changes_requested"])
       .order("submitted_at", { ascending: true, nullsFirst: false })
       .limit(8),
     adminClient
@@ -124,10 +127,10 @@ export default async function CommandPage() {
     adminClient.from("member_profile_submissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
-  const cards = (cardsResult.data ?? []) as CardRow[];
+  const pendingVersions = (cardsResult.data ?? []) as PendingVersionRow[];
   const operators = (operatorsResult.data ?? []) as OperatorRow[];
   const events = (eventsResult.data ?? []) as EventRow[];
-  const submittedCards = cards.filter((card) => card.status === "submitted").length;
+  const submittedCards = pendingVersions.filter((version) => version.status === "submitted").length;
 
   const modules = [
     {
@@ -192,17 +195,18 @@ export default async function CommandPage() {
 
       <section className="command-grid">
         <article className="command-panel admin-list-panel">
-          <div className="panel-label"><span>CARD REVIEW QUEUE</span><span>{cards.length} ACTIVE</span></div>
+          <div className="panel-label"><span>CARD REVIEW QUEUE</span><span>{pendingVersions.length} ACTIVE</span></div>
           <div className="admin-list">
-            {cards.length ? cards.map((card) => {
-              const operator = first(card.operators);
+            {pendingVersions.length ? pendingVersions.map((version) => {
+              const card = first(version.cards);
+              const operator = first(card?.operators ?? null);
               return (
-                <Link href={`/command/cards?card=${card.id}`} className="admin-row" key={card.id}>
-                  <div><strong>{card.name}</strong><span>{operator?.callsign ?? "UNKNOWN OPERATOR"}</span></div>
-                  <em>{card.status.replaceAll("_", " ")}</em>
+                <Link href={`/command/cards?card=${card?.id ?? ""}`} className="admin-row" key={version.id}>
+                  <div><strong>{card?.name ?? "Untitled card"}</strong><span>{operator?.callsign ?? "UNKNOWN OPERATOR"} · v{version.version_number}</span></div>
+                  <em>{version.status.replaceAll("_", " ")}</em>
                 </Link>
               );
-            }) : <p className="admin-empty">No active card reviews.</p>}
+            }) : <p className="admin-empty">No versions awaiting review.</p>}
           </div>
           <div className="panel-footer"><Link href="/command/cards">OPEN CARD WORKFLOW</Link><ExternalLink size={13} /></div>
         </article>
