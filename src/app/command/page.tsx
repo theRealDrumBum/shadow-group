@@ -5,6 +5,7 @@ import {
   ChevronRight,
   CreditCard,
   ExternalLink,
+  Package,
   Radio,
   ShieldCheck,
   UserCog,
@@ -101,7 +102,7 @@ export default async function CommandPage() {
   }
 
   const adminClient = createSupabaseAdmin();
-  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult] = await Promise.all([
+  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult, gearResult] = await Promise.all([
     adminClient
       .from("cards")
       .select("id,name,status,submitted_at,operators(callsign)")
@@ -122,6 +123,7 @@ export default async function CommandPage() {
     adminClient.from("operator_social_links").select("id", { count: "exact", head: true }).eq("is_public", true),
     adminClient.from("recruitment_submissions").select("id", { count: "exact", head: true }).in("status", ["new", "reviewing"]),
     adminClient.from("member_profile_submissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    adminClient.from("gear_catalog").select("id", { count: "exact", head: true }).eq("is_active", true),
   ]);
 
   const cards = (cardsResult.data ?? []) as CardRow[];
@@ -153,6 +155,12 @@ export default async function CommandPage() {
       detail: `${profileSubsResult.count ?? 0} member profiles awaiting review`,
       href: "/command/profile-review",
       icon: UserCog,
+    },
+    {
+      title: "Gear & equipment",
+      detail: `${gearResult.count ?? 0} active gear items`,
+      href: "/command/gear",
+      icon: Package,
     },
     {
       title: "Sponsors & social",
