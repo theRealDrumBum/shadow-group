@@ -39,7 +39,7 @@ const launchTiles = [
     icon: Crosshair,
   },
   {
-    href: "#partners",
+    href: "/sponsors",
     title: "Sponsors",
     text: "Partners, affiliate gear, and brands supporting the team.",
     action: "Our Sponsors",
