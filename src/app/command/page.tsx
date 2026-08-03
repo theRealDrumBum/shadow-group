@@ -5,6 +5,7 @@ import {
   ChevronRight,
   CreditCard,
   ExternalLink,
+  Package,
   Radio,
   ShieldCheck,
   UserCheck,
@@ -105,7 +106,7 @@ export default async function CommandPage() {
   }
 
   const adminClient = createSupabaseAdmin();
-  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult, pendingAccountsResult] = await Promise.all([
+  const [cardsResult, operatorsResult, eventsResult, brandsResult, socialResult, recruitsResult, profileSubsResult, pendingAccountsResult, gearResult] = await Promise.all([
     adminClient
       .from("card_versions")
       .select("id,status,version_number,submitted_at,cards!card_versions_card_id_fkey!inner(id,name,status,operators!cards_operator_id_fkey(callsign))")
@@ -127,6 +128,7 @@ export default async function CommandPage() {
     adminClient.from("recruitment_submissions").select("id", { count: "exact", head: true }).in("status", ["new", "reviewing"]),
     adminClient.from("member_profile_submissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
     adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("account_status", "pending"),
+    adminClient.from("gear_catalog").select("id", { count: "exact", head: true }).eq("is_active", true),
   ]);
 
   const pendingVersions = (cardsResult.data ?? []) as PendingVersionRow[];
@@ -164,6 +166,12 @@ export default async function CommandPage() {
       detail: `${profileSubsResult.count ?? 0} member profiles awaiting review`,
       href: "/command/profile-review",
       icon: UserCog,
+    },
+    {
+      title: "Gear & equipment",
+      detail: `${gearResult.count ?? 0} active gear items`,
+      href: "/command/gear",
+      icon: Package,
     },
     {
       title: "Sponsors & social",

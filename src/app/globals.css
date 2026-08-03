@@ -29,6 +29,26 @@
 .page-title{font:900 clamp(48px,6vw,86px)/.92 'Barlow Condensed';text-transform:uppercase;letter-spacing:-.02em;margin:16px 0 14px}
 .detail-lead{color:var(--muted);font-size:16px;line-height:1.6;max-width:640px;margin:0 0 24px}
 .registry-page{padding-top:60px}
+/* Public sponsors + gear */
+.gear-category{margin-top:34px}
+.gear-category h2{font:900 clamp(28px,4vw,42px) 'Barlow Condensed';text-transform:uppercase;margin:0 0 16px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.sponsor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.sponsor-card{display:flex;flex-direction:column;border:1px solid var(--line);border-top:3px solid var(--shadow-purple);background:var(--shadow-surface-raised);overflow:hidden;transition:transform .2s ease,border-color .2s ease}
+.sponsor-card:hover{transform:translateY(-4px);border-top-color:var(--shadow-purple-bright)}
+.sponsor-logo{height:100px;display:grid;place-items:center;background:#0a0810;padding:14px}
+.sponsor-logo img{max-width:100%;max-height:72px;object-fit:contain}
+.sponsor-logo span{font:800 18px 'Barlow Condensed';text-transform:uppercase;color:var(--text)}
+.sponsor-body{padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.sponsor-body strong{font:800 18px 'Barlow Condensed';text-transform:uppercase}
+.sponsor-body p{color:var(--muted);font-size:13px;line-height:1.5;margin:4px 0 0}
+.gear-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.gear-card{display:flex;flex-direction:column;border:1px solid var(--line);background:var(--shadow-surface-raised);overflow:hidden}
+.gear-image{height:150px;background:radial-gradient(circle at 50% 40%,rgba(139,79,179,.16),transparent 60%),#0a0810;display:grid;place-items:center;overflow:hidden}
+.gear-image img{width:100%;height:100%;object-fit:cover}
+.gear-body{padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.gear-body strong{font:800 17px 'Barlow Condensed';text-transform:uppercase}
+.gear-meta{color:var(--muted);font-size:12px}
+.gear-disclosure{color:var(--muted);font-size:11px;line-height:1.4;margin:4px 0 0;font-style:italic}
 .registry-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:26px;color:var(--muted);font:700 12px 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase}
 .search-box{display:flex;align-items:center;gap:8px;border:1px solid var(--line);padding:10px 14px;color:var(--muted)}
 .detail-page{padding-top:60px}
