@@ -22,6 +22,8 @@ export type ManagedOperator = {
   long_bio: string | null;
   portrait_url: string | null;
   roster_notes: string | null;
+  invited: number;
+  saidYes: number;
   games: number;
   noShows: number;
   memberEmail: string | null;
@@ -169,7 +171,7 @@ export function RosterManager({ operators }: { operators: ManagedOperator[] }) {
               <span className="operator-summary-meta">{operator.display_name ?? "—"} · {operator.rank ?? "—"}</span>
               <span className="operator-summary-stats">
                 <span className={`status-pill ${operator.is_public ? "status-approved" : "status-pending"}`}>{operator.is_public ? "public" : "hidden"}</span>
-                <span className="operator-games">{operator.games} games{operator.noShows ? ` · ${operator.noShows} no-show` : ""}</span>
+                <span className="operator-games">{operator.invited} invited · {operator.saidYes} yes · {operator.games} games{operator.noShows ? ` · ${operator.noShows} no-show` : ""}</span>
               </span>
             </summary>
             <OperatorEditor operator={operator} onSaved={onSaved} />

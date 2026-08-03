@@ -5,6 +5,24 @@
 
 @media(max-width:1150px){.archive-console{grid-template-columns:1fr}.console-copy{border-right:0;border-bottom:1px solid var(--line)}}
 @media(max-width:700px){.site-header{height:72px;padding:0 14px}.brand img{width:48px;height:48px}.brand strong{font-size:18px}.section{padding:75px 18px}.section-heading{align-items:flex-start;flex-direction:column}.archive-console{display:block}.console-copy{padding:30px}.console-grid{grid-template-columns:1fr}.console-grid div{border-right:0!important;border-bottom:1px solid var(--line)!important}.console-grid div:last-child{border-bottom:0!important}footer{align-items:flex-start;flex-direction:column;gap:16px}}
+.events-page-section{background:radial-gradient(circle at 15% 80%,rgba(84,64,90,.12),transparent 30%)}
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px}
+.events-grid--preview{margin-top:10px}
+.event-card{display:flex;flex-direction:column;border:1px solid var(--line);background:linear-gradient(145deg,rgba(28,31,24,.92),rgba(11,12,11,.95));overflow:hidden}
+.event-card-cover{height:180px;background:rgba(0,0,0,.35);overflow:hidden}
+.event-card-cover img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85) contrast(1.05)}
+.event-card-cover--empty{display:grid;place-items:center;color:rgba(173,104,212,.4)}
+.event-card-body{padding:20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.event-card-tags{display:flex;gap:8px;flex-wrap:wrap}
+.event-tag{border:1px solid var(--line);color:var(--muted);padding:3px 9px;font:700 10px 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase}
+.event-tag--featured{border-color:var(--purple2);color:var(--purple2)}
+.event-card-body h3{font:800 24px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.02em;margin:0}
+.event-card-meta{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:13px}
+.event-card-meta span{display:inline-flex;align-items:center;gap:7px}
+.event-card-summary{color:var(--muted);font-size:13px;line-height:1.6;margin:0;flex:1}
+.event-card-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.events-empty{border:1px dashed var(--line);padding:40px;text-align:center;color:var(--muted)}
+.events-empty p{margin:0}
 
 /* Shared page primitives for non-command public pages */
 .brand-mark{display:inline-grid;place-items:center;width:40px;height:40px;border:1px solid var(--shadow-border);color:var(--purple2)}

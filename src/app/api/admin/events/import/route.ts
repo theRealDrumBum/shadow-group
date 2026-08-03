@@ -45,6 +45,133 @@ function absolutize(candidate: string | null, base: string): string | null {
   }
 }
 
+// Reduce a schema.org datetime (e.g. "2026-05-18T09:00:00-05:00" or "2026-05-18")
+// to a plain YYYY-MM-DD date, which is what the events table stores.
+function toDateOnly(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : null;
+}
+
+function firstString(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return decodeEntities(value.trim());
+  }
+  return null;
+}
+
+// schema.org location can be a Place with an address that is either a plain
+// string or a PostalAddress object. Flatten it into a human-readable line.
+function formatAddress(address: unknown): string | null {
+  if (!address) return null;
+  if (typeof address === "string") return decodeEntities(address.trim()) || null;
+  if (typeof address === "object") {
+    const a = address as Record<string, unknown>;
+    const parts = [a.streetAddress, a.addressLocality, a.addressRegion, a.postalCode, a.addressCountry]
+      .filter((part): part is string => typeof part === "string" && Boolean(part.trim()))
+      .map((part) => part.trim());
+    if (parts.length) return decodeEntities(parts.join(", "));
+  }
+  return null;
+}
+
+type ExtractedEvent = {
+  name: string | null;
+  description: string | null;
+  image: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  venueName: string | null;
+  location: string | null;
+  organizer: string | null;
+  eventUrl: string | null;
+  ticketUrl: string | null;
+};
+
+function isEventType(type: unknown): boolean {
+  const types = Array.isArray(type) ? type : [type];
+  return types.some((t) => typeof t === "string" && /event$/i.test(t));
+}
+
+// Walk arbitrarily nested JSON-LD (objects, arrays, and @graph) and return the
+// first node that looks like a schema.org Event.
+function findEventNode(node: unknown, depth = 0): Record<string, unknown> | null {
+  if (!node || depth > 6) return null;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const found = findEventNode(item, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (typeof node === "object") {
+    const obj = node as Record<string, unknown>;
+    if (isEventType(obj["@type"])) return obj;
+    if (obj["@graph"]) {
+      const found = findEventNode(obj["@graph"], depth + 1);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function extractJsonLdEvent(html: string): Partial<ExtractedEvent> {
+  const blocks = html.matchAll(
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  );
+  for (const block of blocks) {
+    const raw = block[1]?.trim();
+    if (!raw) continue;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      continue;
+    }
+    const event = findEventNode(parsed);
+    if (!event) continue;
+
+    const location = event.location as Record<string, unknown> | string | undefined;
+    let venueName: string | null = null;
+    let address: string | null = null;
+    if (typeof location === "string") {
+      address = decodeEntities(location) || null;
+    } else if (location && typeof location === "object") {
+      venueName = firstString(location.name);
+      address = formatAddress(location.address) ?? firstString(location.name);
+    }
+
+    const organizer = event.organizer as Record<string, unknown> | string | undefined;
+    const organizerName =
+      typeof organizer === "string"
+        ? decodeEntities(organizer)
+        : organizer && typeof organizer === "object"
+          ? firstString(organizer.name)
+          : null;
+
+    const offers = event.offers as Record<string, unknown> | Array<Record<string, unknown>> | undefined;
+    const firstOffer = Array.isArray(offers) ? offers[0] : offers;
+    const ticketUrl = firstOffer ? firstString(firstOffer.url) : null;
+
+    const image = event.image;
+    const imageUrl = Array.isArray(image) ? firstString(image[0]) : firstString(image);
+
+    return {
+      name: firstString(event.name),
+      description: firstString(event.description),
+      image: imageUrl,
+      startDate: toDateOnly(event.startDate),
+      endDate: toDateOnly(event.endDate),
+      venueName,
+      location: address,
+      organizer: organizerName,
+      eventUrl: firstString(event.url),
+      ticketUrl
+    };
+  }
+  return {};
+}
+
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -84,15 +211,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Could not fetch that link." }, { status: 422 });
   }
 
+  // Prefer structured schema.org Event data, then fall back to Open Graph /
+  // Twitter cards, then the bare <title>.
+  const ld = extractJsonLdEvent(html);
+
   const title =
+    ld.name ||
     metaContent(html, "og:title") ||
     metaContent(html, "twitter:title") ||
     decodeEntities(html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] ?? "") ||
     parsed.hostname;
-  const image = absolutize(metaContent(html, "og:image") || metaContent(html, "twitter:image"), url);
-  const description = metaContent(html, "og:description") || metaContent(html, "description");
+  const image = absolutize(
+    ld.image || metaContent(html, "og:image") || metaContent(html, "twitter:image"),
+    url
+  );
+  const description = ld.description || metaContent(html, "og:description") || metaContent(html, "description");
   const siteName = metaContent(html, "og:site_name");
-  const canonicalUrl = metaContent(html, "og:url") || url;
+  const canonicalUrl = ld.eventUrl || metaContent(html, "og:url") || url;
 
   const name = title || parsed.hostname;
   const slug = slugify(name) || slugify(`${parsed.hostname}-${parsed.pathname}`) || `event-${Date.now()}`;
@@ -103,11 +238,17 @@ export async function POST(request: NextRequest) {
     summary: description ? description.slice(0, 280) : null,
     description: description || null,
     cover_image_url: image,
+    event_date: ld.startDate,
+    end_date: ld.endDate,
+    venue_name: ld.venueName,
+    location: ld.location,
     event_url: canonicalUrl,
+    ticket_url: ld.ticketUrl,
     source_url: url,
-    organizer: siteName || parsed.hostname,
+    organizer: ld.organizer || siteName || parsed.hostname,
     attendance_status: "interested",
-    // Imported events start private so an admin can add the date before publishing.
+    // Imported events start private so an admin can review the details and
+    // publish (which invites the roster) when ready.
     is_public: false,
     attribution_source: "shadow-group",
     attribution_medium: "team-site",
@@ -128,6 +269,15 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     event: data,
-    imported: { name, image, description, organizer: record.organizer }
+    imported: {
+      name,
+      image,
+      description,
+      organizer: record.organizer,
+      event_date: record.event_date,
+      end_date: record.end_date,
+      venue_name: record.venue_name,
+      location: record.location
+    }
   }, { status: 201 });
 }

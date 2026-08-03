@@ -3,20 +3,27 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { EventsConsole, type EventItem, type RsvpEntry } from "./events-console";
+import { EventsConsole, type EventItem, type RsvpEntry, type MyStats } from "./events-console";
 
 export const dynamic = "force-dynamic";
 
 type EventRow = {
   id: string;
+  slug: string;
   name: string;
   event_date: string | null;
+  end_date: string | null;
   location: string | null;
   venue_name: string | null;
   organizer: string | null;
+  summary: string | null;
+  description: string | null;
   cover_image_url: string | null;
   event_url: string | null;
+  ticket_url: string | null;
+  attendance_status: string | null;
   is_public: boolean;
+  is_featured: boolean;
 };
 
 type RsvpRow = {
@@ -40,18 +47,22 @@ export default async function EventsPage() {
   const isAdmin = profile.role === "admin";
 
   const admin = createSupabaseAdmin();
-  const [{ data: eventRows }, { data: rsvpRows }] = await Promise.all([
+  const [{ data: eventRows }, { data: rsvpRows }, { count: rosterCount }] = await Promise.all([
     admin
       .from("events")
-      .select("id,name,event_date,location,venue_name,organizer,cover_image_url,event_url,is_public")
+      .select("id,slug,name,event_date,end_date,location,venue_name,organizer,summary,description,cover_image_url,event_url,ticket_url,attendance_status,is_public,is_featured")
       .order("event_date", { ascending: true, nullsFirst: false }),
     admin
       .from("event_rsvps")
-      .select("event_id,profile_id,status,attended,profiles(display_name,email)")
+      .select("event_id,profile_id,status,attended,profiles(display_name,email)"),
+    admin.from("profiles").select("id", { count: "exact", head: true }).eq("account_status", "approved")
   ]);
 
   const rsvpsByEvent = new Map<string, RsvpEntry[]>();
   const myStatusByEvent = new Map<string, string>();
+  const invitedEventIds = new Set<string>();
+  const myStats: MyStats = { invitations: 0, going: 0, attended: 0, awaiting: 0 };
+
   for (const row of (rsvpRows ?? []) as RsvpRow[]) {
     const member = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
     const list = rsvpsByEvent.get(row.event_id) ?? [];
@@ -62,28 +73,33 @@ export default async function EventsPage() {
       attended: row.attended
     });
     rsvpsByEvent.set(row.event_id, list);
-    if (row.profile_id === user.id) myStatusByEvent.set(row.event_id, row.status);
+    if (row.profile_id === user.id) {
+      myStatusByEvent.set(row.event_id, row.status);
+      invitedEventIds.add(row.event_id);
+      myStats.invitations += 1;
+      if (row.status === "going") myStats.going += 1;
+      if (row.status === "invited") myStats.awaiting += 1;
+      if (row.attended === true) myStats.attended += 1;
+    }
   }
 
-  const events: EventItem[] = ((eventRows ?? []) as EventRow[]).map((event) => {
-    const rsvps = rsvpsByEvent.get(event.id) ?? [];
-    return {
-      id: event.id,
-      name: event.name,
-      event_date: event.event_date,
-      location: event.location,
-      venue_name: event.venue_name,
-      organizer: event.organizer,
-      cover_image_url: event.cover_image_url,
-      event_url: event.event_url,
-      is_public: event.is_public,
-      goingCount: rsvps.filter((r) => r.status === "going").length,
-      maybeCount: rsvps.filter((r) => r.status === "maybe").length,
-      notGoingCount: rsvps.filter((r) => r.status === "not_going").length,
-      myStatus: myStatusByEvent.get(event.id) ?? null,
-      rsvps: isAdmin ? rsvps : []
-    };
-  });
+  const allEvents = ((eventRows ?? []) as EventRow[])
+    // Members only see events that are public or that they have been invited to;
+    // admins see everything, including private drafts.
+    .filter((event) => isAdmin || event.is_public || invitedEventIds.has(event.id))
+    .map((event) => {
+      const rsvps = rsvpsByEvent.get(event.id) ?? [];
+      return {
+        ...event,
+        goingCount: rsvps.filter((r) => r.status === "going").length,
+        maybeCount: rsvps.filter((r) => r.status === "maybe").length,
+        notGoingCount: rsvps.filter((r) => r.status === "not_going").length,
+        invitedCount: rsvps.filter((r) => r.status === "invited").length,
+        responseCount: rsvps.filter((r) => r.status !== "invited").length,
+        myStatus: myStatusByEvent.get(event.id) ?? null,
+        rsvps: isAdmin ? rsvps : []
+      } satisfies EventItem;
+    });
 
   return (
     <main className="section command-page">
@@ -92,10 +108,10 @@ export default async function EventsPage() {
       <h1 className="page-title">Events.</h1>
       <p>
         {isAdmin
-          ? "Import events from a link, publish them, track who is coming, and record who actually showed up."
-          : "Tell the team whether you're coming. Your RSVP helps command coordinate rides, loadouts, and headcount."}
+          ? "Paste an event link to import the details, publish it to the public site, invite the whole roster, and record who actually showed up."
+          : "You'll see every event the team invites you to here. Tell command whether you're going so we can coordinate rides, loadouts, and headcount."}
       </p>
-      <EventsConsole isAdmin={isAdmin} events={events} />
+      <EventsConsole isAdmin={isAdmin} events={allEvents} rosterCount={rosterCount ?? 0} myStats={myStats} />
     </main>
   );
 }

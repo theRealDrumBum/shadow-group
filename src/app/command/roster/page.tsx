@@ -48,17 +48,24 @@ export default async function RosterPage() {
       if (row.email && !emailByOperator.has(row.operator_id)) emailByOperator.set(row.operator_id, row.email);
     }
   }
+  const invited = new Map<string, number>();
+  const going = new Map<string, number>();
   const games = new Map<string, number>();
   const noShows = new Map<string, number>();
+  const bump = (map: Map<string, number>, key: string) => map.set(key, (map.get(key) ?? 0) + 1);
   for (const rsvp of (rsvps ?? []) as { profile_id: string; status: string; attended: boolean | null }[]) {
     const operatorId = operatorByProfile.get(rsvp.profile_id);
     if (!operatorId) continue;
-    if (rsvp.attended === true) games.set(operatorId, (games.get(operatorId) ?? 0) + 1);
-    if (rsvp.status === "going" && rsvp.attended === false) noShows.set(operatorId, (noShows.get(operatorId) ?? 0) + 1);
+    bump(invited, operatorId);
+    if (rsvp.status === "going") bump(going, operatorId);
+    if (rsvp.attended === true) bump(games, operatorId);
+    if (rsvp.status === "going" && rsvp.attended === false) bump(noShows, operatorId);
   }
 
   const managed: ManagedOperator[] = ((operators ?? []) as OperatorRow[]).map((operator) => ({
     ...operator,
+    invited: invited.get(operator.id) ?? 0,
+    saidYes: going.get(operator.id) ?? 0,
     games: games.get(operator.id) ?? 0,
     noShows: noShows.get(operator.id) ?? 0,
     memberEmail: emailByOperator.get(operator.id) ?? null
@@ -71,8 +78,9 @@ export default async function RosterPage() {
       <h1 className="page-title">Roster management.</h1>
       <p>
         Add operators and edit identity, rank/status, field role, patch date, bios, and public visibility.
-        Attendance (games played and RSVP&apos;d-but-no-show) is recorded from the Events module. Changes made
-        here publish to the public roster immediately when an operator is marked public.
+        Long-term event attendance — invitations received, RSVP&apos;d yes, games actually played, and RSVP&apos;d-but-no-show —
+        is recorded from the Events module. Changes made here publish to the public roster immediately when an operator
+        is marked public.
       </p>
       <RosterManager operators={managed} />
     </main>
