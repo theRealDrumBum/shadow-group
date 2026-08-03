@@ -5,3 +5,38 @@
 
 @media(max-width:1150px){.archive-console{grid-template-columns:1fr}.console-copy{border-right:0;border-bottom:1px solid var(--line)}}
 @media(max-width:700px){.site-header{height:72px;padding:0 14px}.brand img{width:48px;height:48px}.brand strong{font-size:18px}.section{padding:75px 18px}.section-heading{align-items:flex-start;flex-direction:column}.archive-console{display:block}.console-copy{padding:30px}.console-grid{grid-template-columns:1fr}.console-grid div{border-right:0!important;border-bottom:1px solid var(--line)!important}.console-grid div:last-child{border-bottom:0!important}footer{align-items:flex-start;flex-direction:column;gap:16px}}
+
+/* Shared page primitives for non-command public pages */
+.brand-mark{display:inline-grid;place-items:center;width:40px;height:40px;border:1px solid var(--shadow-border);color:var(--purple2)}
+.page-title{font:900 clamp(48px,6vw,86px)/.92 'Barlow Condensed';text-transform:uppercase;letter-spacing:-.02em;margin:16px 0 14px}
+.detail-lead{color:var(--muted);font-size:16px;line-height:1.6;max-width:640px;margin:0 0 24px}
+.registry-page{padding-top:60px}
+.registry-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:26px;color:var(--muted);font:700 12px 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase}
+.search-box{display:flex;align-items:center;gap:8px;border:1px solid var(--line);padding:10px 14px;color:var(--muted)}
+.detail-page{padding-top:60px}
+.detail-grid{display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:32px;align-items:start;margin-top:20px}
+.detail-copy .fact-panel,.dossier-copy .fact-panel,.fact-panel{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding:12px 0;color:var(--muted);font:700 11px 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase}
+.fact-panel strong{color:var(--text);font-size:14px;text-align:right}
+
+/* Public roster grid */
+.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:20px}
+.roster-card{display:flex;flex-direction:column;border:1px solid var(--line);border-top:3px solid var(--shadow-purple);background:linear-gradient(180deg,var(--shadow-surface-raised),var(--shadow-surface));overflow:hidden;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.roster-card:hover{transform:translateY(-4px);border-top-color:var(--shadow-purple-bright);box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.roster-portrait{aspect-ratio:1/1;background:radial-gradient(circle at 50% 40%,rgba(139,79,179,.18),transparent 60%),#0a0810;display:grid;place-items:center;overflow:hidden}
+.roster-portrait img{width:100%;height:100%;object-fit:cover}
+.portrait-initials{font:900 44px 'Barlow Condensed';color:var(--shadow-purple-bright);letter-spacing:.05em}
+.roster-card-body{padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.roster-card-body h3{font:800 24px 'Barlow Condensed';text-transform:uppercase;margin:0}
+.roster-name{color:var(--muted);font-size:13px}
+.roster-role{color:var(--purple2);font:700 11px 'Barlow Condensed';letter-spacing:.14em;text-transform:uppercase}
+.roster-card-body p{color:var(--muted);font-size:13px;line-height:1.5;margin:6px 0 0}
+
+/* Operator dossier */
+.dossier-grid{display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:34px;align-items:start;margin-top:20px}
+.dossier-portrait{aspect-ratio:1/1;border:1px solid var(--line);background:radial-gradient(circle at 50% 40%,rgba(139,79,179,.2),transparent 60%),#0a0810;display:grid;place-items:center;overflow:hidden}
+.dossier-portrait img{width:100%;height:100%;object-fit:cover}
+.dossier-bio{color:#c9c4cf;line-height:1.7;margin:20px 0}
+.dossier-social{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+.dossier-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:34px}
+.dossier-gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid var(--line)}
+@media(max-width:760px){.detail-grid,.dossier-grid{grid-template-columns:1fr}}

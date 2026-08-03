@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const launchTiles = [
   {
-    href: "#team",
+    href: "/team",
     title: "Team Roster",
     text: "Meet the operators who make up Shadow Group.",
     action: "View Roster",
