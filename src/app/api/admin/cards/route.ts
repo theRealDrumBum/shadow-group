@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const status = request.nextUrl.searchParams.get("status") ?? "submitted";
   const { data, error } = await auth.supabase
     .from("cards")
-    .select("*, operators(*), expansions(*), card_versions(*)")
+    .select("*, operators!cards_operator_id_fkey(*), expansions(*), card_versions!card_versions_card_id_fkey(*)")
     .eq("status", status)
     .order("submitted_at", { ascending: true, nullsFirst: false });
 

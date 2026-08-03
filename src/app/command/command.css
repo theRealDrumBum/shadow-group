@@ -19,6 +19,29 @@
 .review-note-input{width:100%;min-height:64px;margin:8px 0;padding:10px 12px;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--text);font:400 13px Inter;resize:vertical}
 .review-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
 .review-terminal{color:var(--muted);font-size:12px}
+
+/* Card workflow: summary metrics + filters + richer version detail */
+.workflow-summary{display:flex;gap:14px;flex-wrap:wrap;margin:24px 0 6px}
+.workflow-metric{flex:1;min-width:150px;border:1px solid var(--line);background:rgba(255,255,255,.025);padding:16px 18px;display:grid;gap:4px}
+.workflow-metric-value{font:900 34px 'Barlow Condensed';line-height:1;color:var(--purple2)}
+.workflow-metric-label{font:700 11px 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.review-filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.review-filter{padding:7px 14px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font:700 11px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase}
+.review-filter:hover{border-color:var(--purple2);color:var(--text)}
+.review-filter.is-active{border-color:var(--purple2);color:var(--purple2);background:rgba(139,79,179,.14)}
+.review-card-meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:2px 6px 0}
+.review-mana{margin-left:auto;font:800 14px 'Barlow Condensed';letter-spacing:.06em;color:var(--purple2)}
+.review-typeline{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:8px 0 4px;font:600 13px Inter;color:#c9c4cf}
+.review-rarity{font:800 10px 'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;color:var(--olive2)}
+.review-rules{margin:6px 0;padding-left:18px;display:grid;gap:5px}
+.review-rules li{color:#d3cfda;font-size:13px;line-height:1.5}
+.review-flavor{color:var(--muted);font-style:italic;font-size:13px;margin:6px 0;border-left:2px solid var(--line);padding-left:10px}
+.review-stats{font-size:13px;color:#c9c4cf;margin:6px 0}
+.review-stats strong{color:var(--text)}
+.review-action-approve{border-color:rgba(143,211,154,.5);color:#8fd39a}
+.review-action-approve:hover{background:rgba(143,211,154,.12)}
+.review-action-reject{border-color:rgba(217,139,139,.5);color:#d98b8b}
+.review-action-reject:hover{background:rgba(217,139,139,.12)}
 .review-profile-body{display:flex;gap:16px;padding:8px;align-items:flex-start;flex-wrap:wrap}
 .review-portrait{width:100px;height:100px;border:1px solid var(--line);overflow:hidden;flex:0 0 auto}
 .review-portrait img{width:100%;height:100%;object-fit:cover}
@@ -100,5 +123,29 @@
 .event-edit-toggles{display:flex;gap:18px;flex-wrap:wrap}
 .inline-check{flex-direction:row!important;align-items:center;gap:8px!important;text-transform:none!important;letter-spacing:0!important;font:400 14px Inter!important;color:var(--text)!important}
 .inline-check input{width:auto}
-.admin-table-head.roster-row,.admin-table-row.roster-row{grid-template-columns:1fr 1.2fr .7fr 1fr .85fr .5fr .6fr .6fr .7fr .5fr;min-width:960px}
+.admin-table-head.roster-row,.admin-table-row.roster-row{grid-template-columns:1fr 1.3fr .8fr 1.1fr .9fr .55fr .7fr .55fr;min-width:860px}
 @media(max-width:720px){.event-item{flex-direction:column}.event-cover{width:100%;height:170px}.event-edit-grid{grid-template-columns:1fr}}
+
+/* Admin roster + account managers */
+.roster-manager,.accounts-manager{display:grid;gap:16px;margin-top:22px}
+.roster-toolbar{display:flex;justify-content:flex-end}
+.roster-list{display:grid;gap:12px}
+.operator-card-editor{padding:14px 16px}
+.operator-card-editor>summary{cursor:pointer;display:flex;align-items:center;gap:14px;flex-wrap:wrap;list-style:none}
+.operator-card-editor>summary::-webkit-details-marker{display:none}
+.operator-summary-name{font:800 18px 'Barlow Condensed';letter-spacing:.04em;text-transform:uppercase}
+.operator-summary-meta{color:var(--muted);font-size:13px}
+.operator-summary-stats{margin-left:auto;display:flex;align-items:center;gap:12px}
+.operator-games{color:var(--muted);font-size:12px}
+.operator-form{display:grid;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.operator-form label,.account-editor label{display:flex;flex-direction:column;gap:6px;font:700 11px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.operator-form input,.operator-form textarea,.account-editor select,.account-editor input{width:100%;padding:9px 12px;background:rgba(0,0,0,.32);border:1px solid var(--line);color:var(--text);font:400 14px Inter;resize:vertical}
+.operator-form input:focus,.operator-form textarea:focus,.account-editor select:focus{outline:none;border-color:var(--purple2)}
+.checkbox-row{display:flex;gap:20px;flex-wrap:wrap;margin:4px 0}
+.checkbox{flex-direction:row!important;align-items:center;gap:8px!important;text-transform:none!important;letter-spacing:0!important;color:var(--text)!important;font:600 13px Inter!important}
+.checkbox input{width:auto!important}
+.accounts-list{display:grid;gap:14px;padding:6px}
+.account-editor{border:1px solid var(--line);background:rgba(255,255,255,.02);padding:14px 16px}
+.account-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.account-head strong{display:block;font:800 16px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.04em}
+.account-head span{color:var(--muted);font-size:12px}
