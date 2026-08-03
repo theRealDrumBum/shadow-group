@@ -9,13 +9,15 @@ import {
   Handshake,
   Users,
 } from "lucide-react";
+import { EventCard } from "@/components/event-card";
 import { FeaturedCanon } from "@/components/featured-canon";
 import { GoogleLoginButton } from "@/components/google-login-button";
+import { getPublicEvents } from "@/lib/events";
 import { createClient } from "@/lib/supabase/server";
 
 const launchTiles = [
   {
-    href: "#team",
+    href: "/team",
     title: "Team Roster",
     text: "Meet the operators who make up Shadow Group.",
     action: "View Roster",
@@ -61,6 +63,8 @@ export default async function Home() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const upcomingEvents = await getPublicEvents(3);
 
   return (
     <main className="home-shell">
@@ -187,6 +191,17 @@ export default async function Home() {
             View event schedule <ArrowUpRight size={16} />
           </Link>
         </div>
+        {upcomingEvents.length > 0 ? (
+          <div className="events-grid events-grid--preview">
+            {upcomingEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        ) : (
+          <div className="events-empty">
+            <p>Next deployments are being locked in. Check back soon for dates and locations.</p>
+          </div>
+        )}
       </section>
 
       <section id="recruitment" className="section archive-section">
