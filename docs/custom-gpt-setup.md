@@ -20,13 +20,21 @@ You do **not** need to write code. You do need:
 ```
 Custom GPT ──(Bearer CARD_SYNC_API_KEY)──▶ POST /api/cards/sync
    creates a card OR appends a new version   → status: submitted (never canon)
+   optional artworkUrl / artworkBase64        → stored in card-assets
+   response.previewUrl                        → shareable visual preview
+
+Custom GPT ──(Bearer CARD_SYNC_API_KEY)──▶ POST /api/cards/sync/assets
+   attaches art after the fact                → same previewUrl, updated face
+
+Anyone with previewUrl ──▶ /cards/preview/[token]
+   sees the Magic-style card face (not in the public gallery)
 
 Admin ──(signed in on the website)──▶ /command/cards
-   Approve / Request changes / Reject a version
+   Preview the card face, Approve / Request changes / Reject a version
    Approving sets it as the canonical version and publishes it
 
 Custom GPT ──(Bearer CARD_SYNC_API_KEY)──▶ GET /api/cards/sync?syncKey=...
-   reads each version's status + review_notes → iterates on rejections
+   reads each version's status + review_notes + previewUrl → iterates on rejections
 
 Public ──▶ Card Gallery (/cards) shows only approved canonical versions
 ```
@@ -107,8 +115,7 @@ with Google once so their profile is provisioned.
    [`custom-gpt-instructions.md`](./custom-gpt-instructions.md). These tell the
    GPT how to build `sync_key`s, always look up before creating, never claim a
    card is canon, and how to iterate on rejections.
-6. **Capabilities**: enable *Web Browsing* and *Image Generation* only if you
-   want the GPT to generate card art. They are not required for the API.
+6. **Capabilities**: enable *Image Generation* (required for card art) and *Web Browsing* if you want the GPT to look up reference photos.
 
 ---
 
@@ -134,6 +141,7 @@ with Google once so their profile is provisioned.
 5. ChatGPT will list the available operations:
    - `findCardInRegistry` — `GET /api/cards/sync`
    - `synchronizeCard` — `POST /api/cards/sync`
+   - `uploadCardArtwork` — `POST /api/cards/sync/assets`
    - `listApprovedCards` — `GET /api/cards`
    - `getRandomApprovedCard` — `GET /api/cards/random`
    - `lookupApprovedCard` — `GET /api/cards/lookup`
@@ -145,6 +153,12 @@ Use the **Test** button on `findCardInRegistry` with a `syncKey` like
 `{"exists": false, "matches": []}` (or a match) means auth and the URL are
 correct. A `401` means the API key is wrong; a `404`/`DNS` error means the server
 URL is wrong.
+
+Then test `synchronizeCard` with a complete payload that includes
+`version.artworkUrl` or `version.artworkBase64`. The response should include
+`previewUrl` — open that link to confirm the Magic-style card face renders on
+the website. If art is generated after the card exists, test `uploadCardArtwork`
+and refresh the same preview URL.
 
 ---
 
@@ -185,12 +199,14 @@ In the GPT editor → **Share**:
 
 | Endpoint | Method | Auth | Purpose |
 | --- | --- | --- | --- |
-| `/api/cards/sync` | GET | Bearer `CARD_SYNC_API_KEY` | Look up a card + all versions/status/notes |
-| `/api/cards/sync` | POST | Bearer `CARD_SYNC_API_KEY` | Create a card or append a proposed version |
+| `/api/cards/sync` | GET | Bearer `CARD_SYNC_API_KEY` | Look up a card + all versions/status/notes/previewUrl |
+| `/api/cards/sync` | POST | Bearer `CARD_SYNC_API_KEY` | Create a card or append a proposed version (optional artwork) |
+| `/api/cards/sync/assets` | POST | Bearer `CARD_SYNC_API_KEY` | Attach artwork to the current working version |
 | `/api/cards` | GET | none (public) | List approved canonical cards |
 | `/api/cards/random` | GET | none (public) | One random approved card |
 | `/api/cards/lookup` | GET | none (public) | Find approved cards by key/slug/name/callsign |
+| `/cards/preview/[token]` | GET | none (secret link) | Visual preview of a specific version |
 | `/api/admin/card-versions/{id}/transition` | POST | Bearer admin session JWT | Approve/reject/request changes (admin app only) |
 
 Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-`SUPABASE_SERVICE_ROLE_KEY`, `CARD_SYNC_API_KEY`.
+`SUPABASE_SERVICE_ROLE_KEY`, `CARD_SYNC_API_KEY`, optional `NEXT_PUBLIC_SITE_URL`.

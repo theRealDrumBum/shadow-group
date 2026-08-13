@@ -25,7 +25,7 @@ export default async function CardDetail({ params }: { params: Promise<{ slug: s
       </header>
       <section className="section detail-page">
         <div className="detail-grid">
-          <OperatorCard card={card} />
+          <OperatorCard card={card} linked={false} />
           <div className="detail-copy">
             <span className="kicker">OPERATOR RECORD // APPROVED</span>
             <h1 className="page-title">{card.callsign}</h1>

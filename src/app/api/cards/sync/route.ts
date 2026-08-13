@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { publicCardAssetUrl } from "@/lib/card-registry";
+import {
+  ArtworkIngestError,
+  collectArtworkInputs,
+  pickPrimaryAssetUrl,
+  storeCardArtwork,
+  type ArtworkInput,
+  type StoredArtwork
+} from "@/lib/card-assets";
+import { cardGalleryUrl, cardPreviewUrl, siteOriginFromRequest } from "@/lib/site-url";
 
 type DraftVersionStatus = "draft" | "generating" | "submitted" | "changes_requested";
 
@@ -26,6 +36,7 @@ type SyncPayload = {
     source?: string | null;
     approved?: boolean;
   }>;
+  assets?: ArtworkInput[];
   version: {
     status?: DraftVersionStatus;
     manaCost?: string | null;
@@ -39,7 +50,34 @@ type SyncPayload = {
     factsSnapshot?: Record<string, unknown>;
     artPrompt?: string | null;
     rendererData?: Record<string, unknown>;
+    artworkUrl?: string | null;
+    artworkBase64?: string | null;
+    artworkMimeType?: string | null;
   };
+};
+
+type AssetRow = {
+  id?: string;
+  kind?: string;
+  storage_path?: string | null;
+  mime_type?: string | null;
+};
+
+type VersionRow = {
+  id: string;
+  version_number?: number;
+  preview_token?: string | null;
+  card_assets?: AssetRow[] | null;
+  [key: string]: unknown;
+};
+
+type CardRow = {
+  slug?: string;
+  status?: string;
+  current_version_id?: string | null;
+  canonical_version_id?: string | null;
+  card_versions?: VersionRow[] | null;
+  [key: string]: unknown;
 };
 
 function authorized(request: NextRequest) {
@@ -53,7 +91,38 @@ function invalidPayload(payload: Partial<SyncPayload>) {
     !payload.operator?.callsign || !payload.operator?.slug || !payload.version?.typeLine;
 }
 
+function decorateAssets(assets: AssetRow[] | null | undefined) {
+  return (assets ?? []).map((asset) => ({
+    ...asset,
+    url: publicCardAssetUrl(asset.storage_path)
+  }));
+}
+
+function decorateVersion(version: VersionRow, origin: string) {
+  const assets = decorateAssets(version.card_assets);
+  return {
+    ...version,
+    card_assets: assets,
+    previewUrl: version.preview_token ? cardPreviewUrl(origin, version.preview_token) : null,
+    artworkUrl: pickPrimaryAssetUrl(assets)
+  };
+}
+
+function decorateCard(card: CardRow, origin: string) {
+  const versions = (card.card_versions ?? [])
+    .map((version) => decorateVersion(version, origin))
+    .sort((a, b) => Number(b.version_number ?? 0) - Number(a.version_number ?? 0));
+  const current = versions.find((version) => version.id === card.current_version_id) ?? versions[0];
+  return {
+    ...card,
+    card_versions: versions,
+    previewUrl: current?.previewUrl ?? null,
+    galleryUrl: card.status === "approved" && card.slug ? cardGalleryUrl(origin, String(card.slug)) : null
+  };
+}
+
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -64,19 +133,21 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createSupabaseAdmin();
+    const origin = siteOriginFromRequest(request);
     // `operators` is related to `cards` through two foreign keys
     // (cards.operator_id and operators.dossier_card_id), so the embed must be
     // disambiguated to the cards.operator_id relationship or PostgREST returns
     // PGRST201 (ambiguous embedding).
     let query = supabase
       .from("cards")
-      .select("*, operators!cards_operator_id_fkey(*), card_versions!card_versions_card_id_fkey(*), expansions(*)")
+      .select("*, operators!cards_operator_id_fkey(*), card_versions!card_versions_card_id_fkey(*, card_assets(*)), expansions(*)")
       .limit(10);
     if (syncKey) query = query.eq("sync_key", syncKey);
     if (slug) query = query.eq("slug", slug);
     const { data, error } = await query;
     if (error) throw error;
-    return NextResponse.json({ exists: Boolean(data?.length), matches: data ?? [] });
+    const matches = ((data ?? []) as CardRow[]).map((card) => decorateCard(card, origin));
+    return NextResponse.json({ exists: Boolean(matches.length), matches });
   } catch (error) {
     console.error("Protected card lookup failed", error);
     return NextResponse.json({ error: "Unable to search the registry." }, { status: 500 });
@@ -101,6 +172,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = createSupabaseAdmin();
+    const origin = siteOriginFromRequest(request);
     const now = new Date().toISOString();
 
     const { data: operator, error: operatorError } = await supabase
@@ -150,23 +222,26 @@ export async function POST(request: NextRequest) {
     };
 
     let cardId: string;
+    let cardSlug = payload.card.slug;
     if (existingCard) {
       const { data, error } = await supabase
         .from("cards")
         .update(cardRecord)
         .eq("id", existingCard.id)
-        .select("id")
+        .select("id, slug")
         .single();
       if (error) throw error;
       cardId = data.id;
+      cardSlug = data.slug;
     } else {
       const { data, error } = await supabase
         .from("cards")
         .insert({ ...cardRecord, status: "draft" })
-        .select("id")
+        .select("id, slug")
         .single();
       if (error) throw error;
       cardId = data.id;
+      cardSlug = data.slug;
     }
 
     const { data: lastVersion, error: lookupError } = await supabase
@@ -197,7 +272,7 @@ export async function POST(request: NextRequest) {
         art_prompt: payload.version.artPrompt ?? null,
         renderer_data: payload.version.rendererData ?? {}
       })
-      .select("id, version_number, status")
+      .select("id, version_number, status, preview_token")
       .single();
     if (versionError) throw versionError;
 
@@ -226,6 +301,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const artworkInputs = collectArtworkInputs(payload);
+    const artwork: StoredArtwork[] = [];
+    const artworkErrors: string[] = [];
+    for (const input of artworkInputs) {
+      try {
+        artwork.push(await storeCardArtwork(supabase, { cardId, versionId: version.id, input }));
+      } catch (cause) {
+        const message = cause instanceof ArtworkIngestError
+          ? cause.message
+          : "Unable to store artwork.";
+        artworkErrors.push(message);
+        console.error("Card artwork ingest failed", cause);
+      }
+    }
+
+    const previewUrl = version.preview_token ? cardPreviewUrl(origin, version.preview_token) : null;
+    const galleryUrl = existingCard?.canonical_version_id
+      ? cardGalleryUrl(origin, cardSlug)
+      : null;
+
     return NextResponse.json({
       action: existingCard ? "version_created" : "card_created",
       versionStatus: requestedVersionStatus,
@@ -235,9 +330,14 @@ export async function POST(request: NextRequest) {
       versionId: version.id,
       versionNumber: version.version_number,
       syncKey: payload.syncKey,
+      previewUrl,
+      galleryUrl,
+      artworkUrl: pickPrimaryAssetUrl(artwork.map((item) => ({ kind: item.kind, url: item.url }))),
+      artwork,
+      artworkErrors: artworkErrors.length ? artworkErrors : undefined,
       message: existingCard?.canonical_version_id
-        ? "A proposed version was created. The currently approved version remains canonical until this version is approved."
-        : "The card and its first proposed version were created."
+        ? "A proposed version was created. Preview it with previewUrl. The currently approved version remains canonical until this version is approved."
+        : "The card and its first proposed version were created. Open previewUrl to see the card face."
     }, { status: existingCard ? 200 : 201 });
   } catch (error) {
     console.error("Card sync failed", error);

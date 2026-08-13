@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { OperatorCard } from "@/components/operator-card";
+import { toOperatorCard } from "@/lib/card-face";
 
 export type ReviewVersion = {
   id: string;
@@ -10,6 +12,7 @@ export type ReviewVersion = {
   status: string;
   type_line: string | null;
   mana_cost: string | null;
+  color_identity?: string[] | null;
   rules_text: string[] | null;
   flavor_text: string | null;
   power: string | null;
@@ -18,6 +21,14 @@ export type ReviewVersion = {
   review_notes: string | null;
   submitted_at: string | null;
   created_at: string | null;
+  previewPath?: string | null;
+  artworkUrl?: string | null;
+  callsign?: string | null;
+  role?: string | null;
+  slug?: string | null;
+  cardName?: string | null;
+  collectorNumber?: string | null;
+  expansionCode?: string | null;
 };
 
 export type ReviewCard = {
@@ -158,6 +169,22 @@ export function CardReviewQueue({ cards }: { cards: ReviewCard[] }) {
               const actions = ACTIONS[version.status] ?? [];
               const busy = busyVersionId === version.id;
               const rules = version.rules_text ?? [];
+              const face = toOperatorCard({
+                slug: version.slug ?? card.id,
+                name: version.cardName ?? card.name,
+                callsign: version.callsign ?? card.callsign,
+                typeLine: version.type_line,
+                manaCost: version.mana_cost,
+                rules: rules,
+                flavor: version.flavor_text,
+                power: version.power,
+                toughness: version.toughness,
+                colors: version.color_identity,
+                role: version.role,
+                image: version.artworkUrl,
+                collectorNumber: version.collectorNumber,
+                expansionCode: version.expansionCode
+              });
               return (
                 <div className="review-version" key={version.id}>
                   <div className="review-version-head">
@@ -166,6 +193,17 @@ export function CardReviewQueue({ cards }: { cards: ReviewCard[] }) {
                     {version.mana_cost ? <span className="review-mana">{version.mana_cost}</span> : null}
                   </div>
 
+                  <div className="review-version-body">
+                    <div className="review-card-preview">
+                      <OperatorCard card={face} linked={false} />
+                      {version.previewPath ? (
+                        <a className="text-link review-preview-link" href={version.previewPath} target="_blank" rel="noreferrer">
+                          Open full preview
+                        </a>
+                      ) : null}
+                    </div>
+
+                    <div className="review-version-copy">
                   <div className="review-typeline">
                     <span>{version.type_line ?? "—"}</span>
                     {version.rarity ? <span className="review-rarity">{version.rarity}</span> : null}
@@ -215,6 +253,8 @@ export function CardReviewQueue({ cards }: { cards: ReviewCard[] }) {
                   ) : (
                     <span className="review-terminal">No further actions.</span>
                   )}
+                    </div>
+                  </div>
                 </div>
               );
             })}
