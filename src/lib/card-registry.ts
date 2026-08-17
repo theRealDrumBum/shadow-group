@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { toOperatorCard } from "@/lib/card-face";
 import { cards as sampleCards, type OperatorCard } from "@/lib/data";
 
 const CARD_ASSET_BUCKET = "card-assets";
@@ -60,20 +61,22 @@ const COMPLETE_CARD_COLUMNS =
   "slug,name,callsign,team_role,type_line,mana_cost,color_identity,rules_text,flavor_text,power,toughness,rarity,collector_number,expansion_code,image_path,published_at";
 
 function mapRowToCard(row: CompleteCardRow): OperatorCard {
-  return {
+  return toOperatorCard({
     slug: row.slug,
     name: row.name,
-    callsign: (row.callsign ?? "").toUpperCase() || "UNKNOWN",
-    typeLine: row.type_line ?? "",
-    manaCost: row.mana_cost ?? "",
-    rules: row.rules_text ?? [],
-    flavor: row.flavor_text ?? "",
-    power: row.power ?? "—",
-    toughness: row.toughness ?? "—",
-    colors: row.color_identity ?? [],
-    role: row.team_role ?? "Shadow Group Operator",
-    image: publicCardAssetUrl(row.image_path) ?? FALLBACK_IMAGE
-  };
+    callsign: row.callsign,
+    typeLine: row.type_line,
+    manaCost: row.mana_cost,
+    rules: row.rules_text,
+    flavor: row.flavor_text,
+    power: row.power,
+    toughness: row.toughness,
+    colors: row.color_identity,
+    role: row.team_role,
+    image: publicCardAssetUrl(row.image_path) ?? FALLBACK_IMAGE,
+    collectorNumber: row.collector_number,
+    expansionCode: row.expansion_code
+  });
 }
 
 export type GalleryResult = {

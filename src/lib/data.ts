@@ -11,6 +11,8 @@ export type OperatorCard = {
   colors: string[];
   role: string;
   image: string;
+  collectorNumber?: string | null;
+  expansionCode?: string | null;
 };
 
 export const cards: OperatorCard[] = [
