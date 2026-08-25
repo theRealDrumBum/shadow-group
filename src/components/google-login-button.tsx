@@ -11,27 +11,21 @@ type CommandAccessButtonProps = {
 
 export function CommandAccessButton({ initiallyAuthenticated = false }: CommandAccessButtonProps) {
   const [authenticated, setAuthenticated] = useState(initiallyAuthenticated);
-  const [checkingSession, setCheckingSession] = useState(!initiallyAuthenticated);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createOptionalClient();
-    if (!supabase) {
-      setCheckingSession(false);
-      return;
-    }
+    if (!supabase) return;
 
     if (!initiallyAuthenticated) {
       supabase.auth.getUser().then(({ data }) => {
         setAuthenticated(Boolean(data.user));
-        setCheckingSession(false);
       });
     }
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthenticated(Boolean(session?.user));
-      setCheckingSession(false);
     });
 
     return () => listener.subscription.unsubscribe();
@@ -52,10 +46,6 @@ export function CommandAccessButton({ initiallyAuthenticated = false }: CommandA
       setError(cause instanceof Error ? cause.message : "Unable to sign out.");
       setLoading(false);
     }
-  }
-
-  if (checkingSession) {
-    return <button className="button ghost" type="button" disabled>Checking access...</button>;
   }
 
   if (authenticated) {
