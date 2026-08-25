@@ -33,7 +33,19 @@ Run `supabase/migrations/001_initial_schema.sql` in the Supabase SQL editor. It 
 
 ## Vercel
 
-Import the GitHub repository into Vercel and add the same environment variables from `.env.example`. The current UI uses sample data, so it can deploy before Supabase is connected.
+Import the GitHub repository into Vercel and add the same environment variables from `.env.example`.
+
+## Command access
+
+`/command` is the admin console (cards, roster, events). It no longer depends on Google OAuth.
+
+1. Apply migrations (including `018_bootstrap_admin.sql`) to hosted Supabase.
+2. Confirm the admin email is in `public.allowed_accounts` with `role = admin` and `is_active = true`.
+3. On the site, open **Command Access** → `/command/login`.
+4. First visit: **Create allowlisted account** with that email and a password, then you are signed in.
+5. Later visits: sign in with email and password. Google is optional if the provider is enabled in Supabase Auth.
+
+At `/command/cards` you can add cards, edit text, **upload/replace the finished Magic card image** (stored in the `card-assets` bucket as kind `render`), and approve/reject versions. Uploading onto an already-approved version updates the public gallery immediately.
 
 ## First-pass scope
 
