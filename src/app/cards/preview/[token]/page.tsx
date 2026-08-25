@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Shield } from "lucide-react";
 import { notFound } from "next/navigation";
 import { OperatorCard } from "@/components/operator-card";
-import { toOperatorCard } from "@/lib/card-face";
+import { showsPowerToughness, toOperatorCard } from "@/lib/card-face";
 import { publicCardAssetUrl } from "@/lib/card-registry";
 import { pickPrimaryAssetUrl } from "@/lib/card-assets";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -137,7 +137,9 @@ export default async function CardPreviewPage({ params }: { params: Promise<{ to
             <div className="fact-panel"><span>Role</span><strong>{card.role}</strong></div>
             <div className="fact-panel"><span>Card Type</span><strong>{card.typeLine || "—"}</strong></div>
             <div className="fact-panel"><span>Mana Cost</span><strong>{card.manaCost || "—"}</strong></div>
-            <div className="fact-panel"><span>Power / Toughness</span><strong>{card.power}/{card.toughness}</strong></div>
+            {showsPowerToughness(card.typeLine) ? (
+              <div className="fact-panel"><span>Power / Toughness</span><strong>{card.power}/{card.toughness}</strong></div>
+            ) : null}
             <div className="fact-panel"><span>Color Identity</span><strong>{card.colors.length ? card.colors.join(" / ") : "—"}</strong></div>
             <div className="fact-panel"><span>Rarity</span><strong>{version.rarity ?? "—"}</strong></div>
             <div className="fact-panel"><span>Expansion</span><strong>{expansionLabel}</strong></div>
