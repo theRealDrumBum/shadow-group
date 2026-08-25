@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { isApprovedAdmin, loadSessionProfile } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export async function requireAdmin(request: NextRequest) {
@@ -13,13 +14,9 @@ export async function requireAdmin(request: NextRequest) {
     return { authorized: false as const, status: 401, error: "Invalid or expired session." };
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, role, display_name, account_status")
-    .eq("id", user.id)
-    .single();
+  const profile = await loadSessionProfile(user);
 
-  if (profileError || profile?.role !== "admin" || profile.account_status !== "approved") {
+  if (!profile || !isApprovedAdmin(profile)) {
     return { authorized: false as const, status: 403, error: "Administrator access required." };
   }
 

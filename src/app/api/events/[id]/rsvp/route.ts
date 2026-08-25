@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isApprovedAccount, loadSessionProfile } from "@/lib/auth/session-profile";
 import { createClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -11,12 +12,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
   const { data: { user } } = await session.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in to RSVP." }, { status: 401 });
 
-  const { data: profile } = await session
-    .from("profiles")
-    .select("account_status")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profile?.account_status !== "approved") {
+  const profile = await loadSessionProfile(user);
+  if (!isApprovedAccount(profile)) {
     return NextResponse.json({ error: "Your account is not approved yet." }, { status: 403 });
   }
 
