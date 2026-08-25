@@ -15,11 +15,11 @@ export async function requireAdmin(request: NextRequest) {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, role, display_name")
+    .select("id, role, display_name, account_status")
     .eq("id", user.id)
     .single();
 
-  if (profileError || profile?.role !== "admin") {
+  if (profileError || profile?.role !== "admin" || profile.account_status !== "approved") {
     return { authorized: false as const, status: 403, error: "Administrator access required." };
   }
 

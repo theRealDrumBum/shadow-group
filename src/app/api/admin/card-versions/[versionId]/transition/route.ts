@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/admin";
 
 type TransitionStatus = "submitted" | "changes_requested" | "approved" | "rejected" | "archived";
 
@@ -8,30 +8,14 @@ type TransitionBody = {
   notes?: string | null;
 };
 
-async function requireAdmin(request: NextRequest) {
-  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!token) return null;
-
-  const supabase = createSupabaseAdmin();
-  const { data: authData, error: authError } = await supabase.auth.getUser(token);
-  if (authError || !authData.user) return null;
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", authData.user.id)
-    .single();
-
-  if (profileError || profile?.role !== "admin") return null;
-  return { supabase, adminId: profile.id };
-}
-
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ versionId: string }> }
 ) {
-  const admin = await requireAdmin(request);
-  if (!admin) return NextResponse.json({ error: "Administrator access required." }, { status: 403 });
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
 
   const { versionId } = await context.params;
   const body = await request.json().catch(() => null) as TransitionBody | null;
@@ -40,7 +24,8 @@ export async function POST(
   }
 
   const now = new Date().toISOString();
-  const { supabase, adminId } = admin;
+  const { supabase, user } = auth;
+  const adminId = user.id;
 
   try {
     const { data: version, error: versionError } = await supabase
@@ -51,10 +36,10 @@ export async function POST(
     if (versionError) throw versionError;
 
     const allowed: Record<string, TransitionStatus[]> = {
-      draft: ["submitted", "archived"],
+      draft: ["submitted", "approved", "archived"],
       generating: ["submitted", "archived"],
       submitted: ["changes_requested", "approved", "rejected", "archived"],
-      changes_requested: ["submitted", "rejected", "archived"],
+      changes_requested: ["submitted", "approved", "rejected", "archived"],
       approved: ["archived"],
       rejected: ["submitted", "archived"],
       archived: []
