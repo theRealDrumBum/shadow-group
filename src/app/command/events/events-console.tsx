@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CalendarDays,
@@ -130,6 +130,16 @@ export function EventsConsole({
   const [draft, setDraft] = useState<EditableEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const visibleEvents = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return events;
+    return events.filter((event) =>
+      [event.name, event.location, event.venue_name, event.organizer, event.event_date]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle)),
+    );
+  }, [events, query]);
 
   async function importEvent() {
     if (!importUrl.trim()) return;
@@ -300,12 +310,23 @@ export function EventsConsole({
         </div>
       ) : null}
 
+      <div className="command-list-toolbar">
+        <input
+          className="command-search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search events, venue, date…"
+        />
+      </div>
+
       {events.length === 0 ? (
         <div className="notice">No events yet. {isAdmin ? "Import one from a link above." : "You'll see events here when command invites you."}</div>
+      ) : visibleEvents.length === 0 ? (
+        <p className="admin-empty">No events match that search.</p>
       ) : null}
 
       <div className="events-list">
-        {events.map((event) => {
+        {visibleEvents.map((event) => {
           const isEditing = editingId === event.id;
           const invited = !isAdmin && event.myStatus === "invited";
           return (

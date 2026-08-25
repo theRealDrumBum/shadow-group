@@ -249,14 +249,40 @@ export function GearConsole({ brands, gear, operators, loadout }: { brands: Bran
   const onDone = () => router.refresh();
   const [addingBrand, setAddingBrand] = useState(false);
   const [addingGear, setAddingGear] = useState(false);
+  const [query, setQuery] = useState("");
+  const needle = query.trim().toLowerCase();
+  const visibleBrands = useMemo(() => {
+    if (!needle) return brands;
+    return brands.filter((brand) =>
+      [brand.name, brand.partnership_level, brand.website_url]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle)),
+    );
+  }, [brands, needle]);
+  const visibleGear = useMemo(() => {
+    if (!needle) return gear;
+    return gear.filter((item) =>
+      [item.name, item.category, item.model, item.brand?.name]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle)),
+    );
+  }, [gear, needle]);
 
   return (
     <div className="gear-console">
+      <div className="command-list-toolbar">
+        <input
+          className="command-search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search brands and gear…"
+        />
+      </div>
       <section>
         <div className="gear-section-head"><h2>Brands &amp; sponsors</h2><button className="button ghost" type="button" onClick={() => setAddingBrand((v) => !v)}><Plus size={14} /> {addingBrand ? "Cancel" : "Add brand"}</button></div>
         {addingBrand ? <div className="command-panel gear-panel"><BrandForm onDone={() => { onDone(); setAddingBrand(false); }} /></div> : null}
         <div className="roster-list">
-          {brands.map((brand) => (
+          {visibleBrands.map((brand) => (
             <details className="command-panel gear-panel" key={brand.id}>
               <summary><span className="operator-summary-name">{brand.name}</span><span className="operator-summary-stats"><span className={`status-pill ${brand.is_active ? "status-approved" : "status-pending"}`}>{brand.is_active ? "active" : "off"}</span>{brand.is_sponsor ? <span className="status-pill status-approved">sponsor</span> : null}</span></summary>
               <BrandForm brand={brand} onDone={onDone} />
@@ -269,7 +295,7 @@ export function GearConsole({ brands, gear, operators, loadout }: { brands: Bran
         <div className="gear-section-head"><h2>Gear catalog</h2><button className="button ghost" type="button" onClick={() => setAddingGear((v) => !v)}><Plus size={14} /> {addingGear ? "Cancel" : "Add gear"}</button></div>
         {addingGear ? <div className="command-panel gear-panel"><GearForm brands={brands} onDone={() => { onDone(); setAddingGear(false); }} /></div> : null}
         <div className="roster-list">
-          {gear.map((item) => (
+          {visibleGear.map((item) => (
             <details className="command-panel gear-panel" key={item.id}>
               <summary><span className="operator-summary-name">{item.name}</span><span className="operator-summary-meta">{item.category}{item.brand?.name ? ` · ${item.brand.name}` : ""}</span><span className="operator-summary-stats">{item.affiliate_url ? <span className="status-pill status-approved">affiliate</span> : null}<span className={`status-pill ${item.is_active ? "status-approved" : "status-pending"}`}>{item.is_active ? "active" : "off"}</span></span></summary>
               <GearForm item={item} brands={brands} onDone={onDone} />

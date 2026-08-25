@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { CommandPageHeader } from "../command-header";
 import { GearConsole, type BrandRow, type GearRow, type LoadoutRow, type OperatorOption } from "./gear-console";
 
 export const dynamic = "force-dynamic";
@@ -31,14 +30,12 @@ export default async function GearPage() {
   };
 
   return (
-    <main className="section command-page">
-      <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
-      <span className="kicker">ADMIN MODULE // GEAR &amp; EQUIPMENT</span>
-      <h1 className="page-title">Gear &amp; equipment.</h1>
-      <p>
-        Maintain the brand and gear catalog with product and affiliate links for attribution, then assign gear to
-        each operator&apos;s loadout. Active gear and public loadout items appear on the site with tracked outbound links.
-      </p>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Catalog"
+        title="Gear"
+        description="Brands, product links, and operator loadouts. Public items show on the site with affiliate attribution."
+      />
       <GearConsole
         brands={((brands ?? []) as Record<string, unknown>[]).map(normalizeBrand)}
         gear={((gear ?? []) as Record<string, unknown>[]).map(normalizeGear)}

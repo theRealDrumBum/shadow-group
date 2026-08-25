@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -34,6 +34,16 @@ export function ProfileReviewQueue({ submissions }: { submissions: ProfileSubmis
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return submissions;
+    return submissions.filter((submission) =>
+      [submission.callsign, submission.display_name, submission.memberName, submission.memberEmail, submission.status]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle)),
+    );
+  }, [submissions, query]);
 
   async function transition(id: string, status: string) {
     setBusyId(id);
@@ -67,8 +77,17 @@ export function ProfileReviewQueue({ submissions }: { submissions: ProfileSubmis
 
   return (
     <div className="review-queue">
+      <div className="command-list-toolbar">
+        <input
+          className="command-search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search callsign, name, email…"
+        />
+      </div>
       {error ? <div className="notice" role="alert">{error}</div> : null}
-      {submissions.map((submission) => {
+      {!visible.length ? <p className="admin-empty">No submissions match that search.</p> : null}
+      {visible.map((submission) => {
         const busy = busyId === submission.id;
         return (
           <div className="review-card command-panel" key={submission.id}>

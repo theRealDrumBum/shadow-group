@@ -12,7 +12,7 @@ The app requires Supabase. The homepage (`/`) and every `/api/*` route throw if 
 A local stack is set up via the Supabase CLI (already installed) + Docker (already installed). Startup steps for a fresh session:
 1. Start the Docker daemon (it is not auto-started): `sudo dockerd` (run in a background/tmux session) and, once up, make the socket usable without sudo: `sudo chmod 666 /var/run/docker.sock`.
 2. From the repo root: `supabase start` (uses `supabase/config.toml`; applies `supabase/migrations/*.sql` and `supabase/seed.sql`). Prints local URL + keys; get them again anytime with `supabase status -o env`.
-3. Create `.env.local` (copy `.env.example`) and fill the Supabase URL/anon key/service-role key from `supabase status`, plus any value for `CARD_SYNC_API_KEY`. `OPENAI_API_KEY` is unused and can stay blank.
+3. Create `.env.local` (copy `.env.example`) and fill the Supabase URL/anon key/service-role key from `supabase status`, plus any value for `CARD_SYNC_API_KEY`. Set `OPENAI_API_KEY` to enable Command card image-read and Cardsmith draft.
 4. `npm run dev` → http://localhost:3000. Next.js hot-reloads code but NOT `.env.local`; restart `npm run dev` after editing env.
 
 Local Supabase ports: API `54321`, Postgres `54322`, Studio `54323`, Mailpit `54324`.

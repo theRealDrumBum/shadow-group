@@ -1,11 +1,11 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { publicCardAssetUrl } from "@/lib/card-registry";
 import { pickPrimaryAssetUrl } from "@/lib/card-assets";
-import { CardReviewQueue, type ReviewCard, type ReviewVersion } from "./card-review-queue";
+import { CommandPageHeader } from "../command-header";
+import { CardWorkspace } from "./card-workspace";
+import type { ReviewCard, ReviewVersion } from "./card-review-queue";
 import type { OperatorOption } from "./card-composer";
 import "../../cards/cards.css";
 
@@ -35,7 +35,12 @@ type CardRow = {
   card_versions: VersionRow[] | null;
 };
 
-export default async function CardWorkflowPage() {
+type CardWorkflowPageProps = {
+  searchParams: Promise<{ tab?: string; card?: string }>;
+};
+
+export default async function CardWorkflowPage({ searchParams }: CardWorkflowPageProps) {
+  const params = await searchParams;
   const { user, profile } = await getAuthedUserAndProfile();
   if (!user) redirect("/command/login");
   if (!isApprovedAdmin(profile)) redirect("/command");
@@ -49,7 +54,7 @@ export default async function CardWorkflowPage() {
       .limit(100),
     admin
       .from("operators")
-      .select("id,callsign,display_name")
+      .select("id,callsign,display_name,team_role")
       .order("callsign", { ascending: true })
   ]);
 
@@ -100,37 +105,37 @@ export default async function CardWorkflowPage() {
   }).length;
 
   return (
-    <main className="section command-page">
-      <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
-      <span className="kicker">ADMIN MODULE // CARD GOVERNANCE</span>
-      <h1 className="page-title">Card workflow.</h1>
-      <p>
-        Add new cards, upload or replace the finished Magic card image, edit text, and approve or reject
-        versions. Approving a version publishes it to the public Card Gallery. Uploading a render onto an
-        already-approved version updates the gallery immediately. Cardsmith GPT submissions still appear here
-        for review.
-      </p>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Cards"
+        title="Cards"
+        description="Read a finished render into the form, ask Cardsmith to draft one, then review and publish. Approving a version puts it in the public gallery."
+      />
       <div className="workflow-summary">
         <div className="workflow-metric">
           <span className="workflow-metric-value">{cards.length}</span>
-          <span className="workflow-metric-label">Cards in registry</span>
+          <span className="workflow-metric-label">In registry</span>
         </div>
         <div className="workflow-metric">
           <span className="workflow-metric-value">{pendingReview}</span>
-          <span className="workflow-metric-label">Awaiting review</span>
+          <span className="workflow-metric-label">Needs review</span>
         </div>
         <div className="workflow-metric">
           <span className="workflow-metric-value">{missingArt}</span>
-          <span className="workflow-metric-label">Missing stored art</span>
+          <span className="workflow-metric-label">Missing art</span>
         </div>
         <div className="workflow-metric">
           <span className="workflow-metric-value">
             {cards.filter((card) => card.status === "approved").length}
           </span>
-          <span className="workflow-metric-label">Published to gallery</span>
+          <span className="workflow-metric-label">Published</span>
         </div>
       </div>
-      <CardReviewQueue cards={cards} operators={operators} />
+      <CardWorkspace
+        cards={cards}
+        operators={operators}
+        initialTab={params.tab === "create" || (!pendingReview && !params.card) ? "create" : "review"}
+      />
     </main>
   );
 }
