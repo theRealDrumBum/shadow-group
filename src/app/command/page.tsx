@@ -12,6 +12,7 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
+import { CardForgeLink } from "./card-forge-link";
 import { CommandPageHeader } from "./command-header";
 import { getAuthedUserAndProfile, isApprovedAccount, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -82,7 +83,8 @@ export default async function CommandPage() {
           Private details stay off the public site; public roster copy is reviewed first.
         </p>
         <div className="actions">
-          <Link href="/command/profile" className="button primary">Manage my profile</Link>
+          <CardForgeLink className="button primary" />
+          <Link href="/command/profile" className="button secondary">Manage my profile</Link>
           <Link href="/" className="button secondary">Public site</Link>
         </div>
       </main>
