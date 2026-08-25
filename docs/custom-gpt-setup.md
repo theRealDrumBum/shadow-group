@@ -149,6 +149,8 @@ with Google once so their profile is provisioned.
    - Save. (ChatGPT will send `Authorization: Bearer <key>` on every call.)
 3. **Schema**: paste the contents of
    [`card-sync-openapi.yaml`](./card-sync-openapi.yaml).
+   ChatGPT Actions reject operation `description` fields longer than 300
+   characters; keep those short if you edit the schema.
 4. **Edit the server URL**: in the pasted schema, change
 
    ```yaml
