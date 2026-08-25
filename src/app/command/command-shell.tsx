@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { CARD_FORGE_GPT_URL } from "@/lib/cardsmith";
 import { createOptionalClient } from "@/lib/supabase/client";
 
 export type CommandAccess = "admin" | "member" | "guest";
@@ -71,6 +72,16 @@ export function CommandShell({ access }: { access: CommandAccess }) {
         </nav>
       ) : null}
       <div className="command-shell-actions">
+        {access === "admin" || access === "member" ? (
+          <a
+            href={CARD_FORGE_GPT_URL}
+            className="command-shell-site"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Card Forge
+          </a>
+        ) : null}
         <Link href="/" className="command-shell-site">Public site</Link>
         <button type="button" className="command-shell-signout" onClick={() => void signOut()} aria-label="Sign out">
           <LogOut size={15} />
