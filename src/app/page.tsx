@@ -13,7 +13,7 @@ import { EventCard } from "@/components/event-card";
 import { FeaturedCanon } from "@/components/featured-canon";
 import { GoogleLoginButton } from "@/components/google-login-button";
 import { getPublicEvents } from "@/lib/events";
-import { createClient } from "@/lib/supabase/server";
+import { createOptionalClient } from "@/lib/supabase/server";
 
 const launchTiles = [
   {
@@ -59,10 +59,8 @@ const launchTiles = [
 ];
 
 export default async function Home() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await createOptionalClient();
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
 
   const upcomingEvents = await getPublicEvents(3);
 

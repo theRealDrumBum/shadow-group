@@ -39,6 +39,9 @@ export function trackedUrl(raw: string | null, campaign: string | null, source: 
 // Returns an empty list on any failure so public pages degrade gracefully.
 export async function getPublicEvents(limit = 24): Promise<PublicEvent[]> {
   try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return [];
+    }
     const supabase = createSupabaseAdmin();
     const today = new Date().toISOString().slice(0, 10);
     const { data, error } = await supabase
