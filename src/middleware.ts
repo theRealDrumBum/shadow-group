@@ -30,8 +30,29 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Refreshes expired auth cookies before Server Components read the session.
-  await supabase.auth.getUser();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+  const publicCommand = pathname === "/command/login" || pathname === "/command/set-password";
+
+  function withSessionCookies(next: NextResponse) {
+    response.cookies.getAll().forEach((cookie) => next.cookies.set(cookie));
+    return next;
+  }
+
+  if (pathname.startsWith("/command") && !publicCommand && !user) {
+    const login = request.nextUrl.clone();
+    login.pathname = "/command/login";
+    login.search = "";
+    if (pathname !== "/command") login.searchParams.set("next", pathname);
+    return withSessionCookies(NextResponse.redirect(login));
+  }
+
+  if (pathname === "/command/login" && user) {
+    return withSessionCookies(NextResponse.redirect(new URL("/command", request.url)));
+  }
 
   return response;
 }

@@ -37,7 +37,7 @@ type RsvpRow = {
 export default async function EventsPage() {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
   const { data: profile } = await session
     .from("profiles")
     .select("role,account_status")

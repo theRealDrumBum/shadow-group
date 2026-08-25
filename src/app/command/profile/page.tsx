@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function MemberProfilePage() {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
 
   const { data: profile } = await session
     .from("profiles")

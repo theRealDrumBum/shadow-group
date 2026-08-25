@@ -11,9 +11,15 @@ import {
 } from "lucide-react";
 import { EventCard } from "@/components/event-card";
 import { FeaturedCanon } from "@/components/featured-canon";
-import { GoogleLoginButton } from "@/components/google-login-button";
+import { CommandAccessButton } from "@/components/google-login-button";
 import { getPublicEvents } from "@/lib/events";
 import { createOptionalClient } from "@/lib/supabase/server";
+
+const AUTH_ERRORS: Record<string, string> = {
+  missing_code: "Google sign-in did not complete. Open Command Access and use email and password.",
+  callback_failed: "Google sign-in failed. Open Command Access and sign in with email and password."
+};
+
 
 const launchTiles = [
   {
@@ -58,14 +64,21 @@ const launchTiles = [
   },
 ];
 
-export default async function Home() {
+export default async function Home({
+  searchParams
+}: {
+  searchParams: Promise<{ auth_error?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createOptionalClient();
   const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const authError = params.auth_error ? AUTH_ERRORS[params.auth_error] ?? "Sign-in failed. Open Command Access to try email and password." : null;
 
   const upcomingEvents = await getPublicEvents(3);
 
   return (
     <main className="home-shell">
+      {authError ? <div className="home-auth-error" role="alert">{authError}</div> : null}
       <header className="site-header cinematic-header">
         <Link href="/" className="brand">
           <Image src="/shadow_group_logo.png" width={56} height={56} alt="Shadow Group" priority />
@@ -82,7 +95,7 @@ export default async function Home() {
           <a href="#recruitment">Recruitment</a>
           <a href="#partners">Sponsors</a>
           <a href="#card-archive">Card Archive</a>
-          <GoogleLoginButton initiallyAuthenticated={Boolean(user)} />
+          <CommandAccessButton initiallyAuthenticated={Boolean(user)} />
         </nav>
       </header>
 
