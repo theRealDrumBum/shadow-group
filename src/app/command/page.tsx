@@ -12,7 +12,7 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthedUserAndProfile, isApprovedAccount, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -50,23 +50,14 @@ function first<T>(value: T | T[] | null): T | null {
 }
 
 export default async function CommandPage() {
-  const sessionClient = await createClient();
-  const {
-    data: { user },
-  } = await sessionClient.auth.getUser();
+  const { user, profile } = await getAuthedUserAndProfile();
 
   if (!user) redirect("/");
 
-  const { data: profile } = await sessionClient
-    .from("profiles")
-    .select("display_name,email,role,account_status")
-    .eq("id", user.id)
-    .maybeSingle();
-
   const status = profile?.account_status ?? "pending";
   const role = profile?.role ?? "pending";
-  const approved = status === "approved";
-  const admin = approved && role === "admin";
+  const approved = isApprovedAccount(profile);
+  const admin = isApprovedAdmin(profile);
 
   if (!approved) {
     return (

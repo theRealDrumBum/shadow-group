@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { loadSessionProfile } from "@/lib/auth/session-profile";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -18,6 +19,17 @@ export async function GET(request: Request) {
 
   if (error) {
     return NextResponse.redirect(new URL("/?auth_error=callback_failed", url.origin));
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    try {
+      await loadSessionProfile(user);
+    } catch (cause) {
+      console.error("Failed to provision signed-in profile", cause);
+    }
   }
 
   return NextResponse.redirect(new URL(next, url.origin));

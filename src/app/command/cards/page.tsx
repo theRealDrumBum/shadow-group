@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { publicCardAssetUrl } from "@/lib/card-registry";
 import { pickPrimaryAssetUrl } from "@/lib/card-assets";
@@ -36,11 +36,9 @@ type CardRow = {
 };
 
 export default async function CardWorkflowPage() {
-  const session = await createClient();
-  const { data: { user } } = await session.auth.getUser();
-  if (!user) redirect("/command/login");
-  const { data: profile } = await session.from("profiles").select("role,account_status").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin" || profile.account_status !== "approved") redirect("/command");
+  const { user, profile } = await getAuthedUserAndProfile();
+  if (!user) redirect("/");
+  if (!isApprovedAdmin(profile)) redirect("/command");
 
   const admin = createSupabaseAdmin();
   const [{ data }, { data: operatorRows }] = await Promise.all([
