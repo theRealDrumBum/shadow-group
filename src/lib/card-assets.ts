@@ -20,6 +20,7 @@ export type ArtworkInput = {
   url?: string | null;
   base64?: string | null;
   mimeType?: string | null;
+  bytes?: Uint8Array | null;
 };
 
 export type StoredArtwork = {
@@ -173,7 +174,12 @@ export async function ingestArtwork(input: ArtworkInput): Promise<{ bytes: Uint8
   let bytes: Uint8Array;
   let declared = normalizeMime(input.mimeType);
 
-  if (input.base64?.trim()) {
+  if (input.bytes && input.bytes.byteLength) {
+    if (input.bytes.byteLength > MAX_ARTWORK_BYTES) {
+      throw new ArtworkIngestError("Artwork exceeds the 8MB size limit.");
+    }
+    bytes = input.bytes;
+  } else if (input.base64?.trim()) {
     const dataUrl = input.base64.trim().match(/^data:([^;,]+);base64,/i);
     if (dataUrl) declared = normalizeMime(dataUrl[1]) ?? declared;
     bytes = bytesFromBase64(input.base64);
@@ -182,7 +188,7 @@ export async function ingestArtwork(input: ArtworkInput): Promise<{ bytes: Uint8
     bytes = downloaded.bytes;
     declared = downloaded.mimeType ?? declared;
   } else {
-    throw new ArtworkIngestError("Provide artworkUrl or artworkBase64.");
+    throw new ArtworkIngestError("Provide artworkUrl, artworkBase64, or an image file.");
   }
 
   const sniffed = sniffMime(bytes);
@@ -276,13 +282,13 @@ export function collectArtworkInputs(payload: {
   }
 
   for (const asset of payload.assets ?? []) {
-    if (asset?.url || asset?.base64) inputs.push(asset);
+    if (asset?.url || asset?.base64 || asset?.bytes) inputs.push(asset);
   }
   return inputs;
 }
 
 export function pickPrimaryAssetUrl(
-  assets: Array<{ kind?: string | null; url?: string | null; storage_path?: string | null }>
+  assets: Array<{ kind?: string | null; url?: string | null; storage_path?: string | null; created_at?: string | null }>
 ): string | null {
   const ranked = [...assets].sort((a, b) => {
     const score = (kind?: string | null) => {
@@ -291,7 +297,9 @@ export function pickPrimaryAssetUrl(
       if (kind === "thumbnail") return 2;
       return 3;
     };
-    return score(a.kind) - score(b.kind);
+    const kindDelta = score(a.kind) - score(b.kind);
+    if (kindDelta !== 0) return kindDelta;
+    return String(b.created_at ?? "").localeCompare(String(a.created_at ?? ""));
   });
   const first = ranked[0];
   if (!first) return null;

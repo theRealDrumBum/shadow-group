@@ -55,6 +55,29 @@
 .review-profile-fields{font-size:13px;flex:1;min-width:220px}
 .review-profile-fields p{margin:4px 0;color:#c9c4cf}
 
+.card-composer{display:grid;gap:14px;margin-top:22px}
+.card-composer-form{padding:18px;display:grid;gap:10px}
+.card-composer-form label,.version-editor label{display:flex;flex-direction:column;gap:6px;font:700 11px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.card-composer-form input,.card-composer-form textarea,.card-composer-form select,.version-editor input,.version-editor textarea,.version-editor select{width:100%;padding:10px 12px;background:rgba(0,0,0,.32);border:1px solid var(--line);color:var(--text);font:400 14px Inter}
+.card-composer-form input:focus,.card-composer-form textarea:focus,.card-composer-form select:focus,.version-editor input:focus,.version-editor textarea:focus,.version-editor select:focus{outline:none;border-color:var(--purple2)}
+.card-composer-form .form-hint,.art-upload small{color:var(--muted);font-size:12px;line-height:1.45}
+.version-editor{margin:12px 0;padding:12px;border:1px solid var(--line);background:rgba(0,0,0,.2);display:grid;gap:10px}
+.art-upload{display:grid;gap:6px;margin:12px 0}
+.art-upload .upload-button{display:inline-flex;align-items:center;gap:8px;width:fit-content;cursor:pointer}
+.art-upload .upload-button.is-busy{opacity:.7;cursor:wait}
+
+/* Command login */
+.command-login-page{max-width:720px}
+.command-login-brand{display:inline-flex;align-items:center;gap:12px;margin-bottom:28px;color:inherit;text-decoration:none}
+.command-login-brand strong{display:block;font:800 18px 'Barlow Condensed';letter-spacing:.14em}
+.command-login-brand small{display:block;font:700 10px 'Barlow Condensed';letter-spacing:.18em;color:var(--purple2)}
+.command-login-form{display:grid;gap:12px;padding:22px 20px;margin-top:24px}
+.command-login-form label{display:flex;flex-direction:column;gap:6px;font:700 11px 'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.command-login-form input{width:100%;padding:10px 12px;background:rgba(0,0,0,.32);border:1px solid var(--line);color:var(--text);font:400 14px Inter}
+.command-login-form input:focus{outline:none;border-color:var(--purple2)}
+.command-login-alt{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px}
+.command-login-back{margin-top:22px}
+
 /* Member profile forms */
 .profile-loading{display:flex;align-items:center;gap:8px;color:var(--muted);margin-top:24px}
 .member-forms{display:grid;gap:22px;margin-top:26px}

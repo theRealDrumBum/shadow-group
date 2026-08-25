@@ -6,13 +6,14 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { publicCardAssetUrl } from "@/lib/card-registry";
 import { pickPrimaryAssetUrl } from "@/lib/card-assets";
 import { CardReviewQueue, type ReviewCard, type ReviewVersion } from "./card-review-queue";
+import type { OperatorOption } from "./card-composer";
 import "../../cards/cards.css";
 
 export const dynamic = "force-dynamic";
 
-type OperatorRef = { callsign: string; display_name: string | null; team_role: string | null };
+type OperatorRef = { id?: string; callsign: string; display_name: string | null; team_role: string | null };
 type ExpansionRef = { code: string | null };
-type AssetRef = { kind: string | null; storage_path: string | null };
+type AssetRef = { kind: string | null; storage_path: string | null; created_at?: string | null };
 
 type VersionRow = ReviewVersion & {
   color_identity?: string[] | null;
@@ -28,6 +29,7 @@ type CardRow = {
   collector_number: string | null;
   submitted_at: string | null;
   created_at: string | null;
+  operator_id?: string | null;
   operators: OperatorRef | OperatorRef[] | null;
   expansions: ExpansionRef | ExpansionRef[] | null;
   card_versions: VersionRow[] | null;
@@ -36,16 +38,24 @@ type CardRow = {
 export default async function CardWorkflowPage() {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
   const { data: profile } = await session.from("profiles").select("role,account_status").eq("id", user.id).maybeSingle();
   if (profile?.role !== "admin" || profile.account_status !== "approved") redirect("/command");
 
   const admin = createSupabaseAdmin();
-  const { data } = await admin
-    .from("cards")
-    .select("id,name,slug,status,collector_number,submitted_at,created_at,operators!cards_operator_id_fkey(callsign,display_name,team_role),expansions(code),card_versions!card_versions_card_id_fkey(id,version_number,status,type_line,mana_cost,color_identity,rules_text,flavor_text,power,toughness,rarity,review_notes,submitted_at,created_at,preview_token,card_assets(kind,storage_path))")
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const [{ data }, { data: operatorRows }] = await Promise.all([
+    admin
+      .from("cards")
+      .select("id,name,slug,status,collector_number,operator_id,submitted_at,created_at,operators!cards_operator_id_fkey(id,callsign,display_name,team_role),expansions(code),card_versions!card_versions_card_id_fkey(id,version_number,status,type_line,mana_cost,color_identity,rules_text,flavor_text,power,toughness,rarity,review_notes,submitted_at,created_at,preview_token,card_assets(kind,storage_path,created_at))")
+      .order("created_at", { ascending: false })
+      .limit(100),
+    admin
+      .from("operators")
+      .select("id,callsign,display_name")
+      .order("callsign", { ascending: true })
+  ]);
+
+  const operators: OperatorOption[] = ((operatorRows ?? []) as OperatorOption[]);
 
   const cards: ReviewCard[] = ((data ?? []) as CardRow[]).map((card) => {
     const operator = Array.isArray(card.operators) ? card.operators[0] : card.operators;
@@ -58,7 +68,8 @@ export default async function CardWorkflowPage() {
         artworkUrl: pickPrimaryAssetUrl(
           (version.card_assets ?? []).map((asset) => ({
             kind: asset.kind,
-            url: publicCardAssetUrl(asset.storage_path)
+            url: publicCardAssetUrl(asset.storage_path),
+            created_at: asset.created_at
           }))
         ),
         callsign: operator?.callsign ?? null,
@@ -71,9 +82,11 @@ export default async function CardWorkflowPage() {
     return {
       id: card.id,
       name: card.name,
+      slug: card.slug,
       status: card.status,
       callsign: operator?.callsign ?? null,
       operatorName: operator?.display_name ?? null,
+      operatorId: card.operator_id ?? operator?.id ?? null,
       submittedAt: card.submitted_at ?? card.created_at ?? null,
       versions
     };
@@ -82,6 +95,11 @@ export default async function CardWorkflowPage() {
   const pendingReview = cards.filter((card) =>
     card.versions.some((version) => version.status === "submitted" || version.status === "changes_requested")
   ).length;
+  const missingArt = cards.filter((card) => {
+    const latest = card.versions[0];
+    const approved = card.versions.find((version) => version.status === "approved") ?? latest;
+    return !approved?.artworkUrl;
+  }).length;
 
   return (
     <main className="section command-page">
@@ -89,9 +107,10 @@ export default async function CardWorkflowPage() {
       <span className="kicker">ADMIN MODULE // CARD GOVERNANCE</span>
       <h1 className="page-title">Card workflow.</h1>
       <p>
-        Review submitted card versions with a live card-face preview, request changes, reject with feedback, or
-        approve a version as the new canonical entry. Approving a version publishes it to the public Card Gallery.
-        Only authenticated administrators can perform these actions.
+        Add new cards, upload or replace the finished Magic card image, edit text, and approve or reject
+        versions. Approving a version publishes it to the public Card Gallery. Uploading a render onto an
+        already-approved version updates the gallery immediately. Cardsmith GPT submissions still appear here
+        for review.
       </p>
       <div className="workflow-summary">
         <div className="workflow-metric">
@@ -103,13 +122,17 @@ export default async function CardWorkflowPage() {
           <span className="workflow-metric-label">Awaiting review</span>
         </div>
         <div className="workflow-metric">
+          <span className="workflow-metric-value">{missingArt}</span>
+          <span className="workflow-metric-label">Missing stored art</span>
+        </div>
+        <div className="workflow-metric">
           <span className="workflow-metric-value">
             {cards.filter((card) => card.status === "approved").length}
           </span>
           <span className="workflow-metric-label">Published to gallery</span>
         </div>
       </div>
-      <CardReviewQueue cards={cards} />
+      <CardReviewQueue cards={cards} operators={operators} />
     </main>
   );
 }
