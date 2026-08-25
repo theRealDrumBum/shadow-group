@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { authorizeCardSync, createCardSyncAdmin } from "@/lib/card-sync-auth";
 import { ArtworkIngestError, storeCardArtwork, type ArtworkKind } from "@/lib/card-assets";
 import { cardPreviewUrl, siteOriginFromRequest } from "@/lib/site-url";
 
@@ -12,19 +12,14 @@ type AssetPayload = {
   artworkMimeType?: string | null;
 };
 
-function authorized(request: NextRequest) {
-  const expected = process.env.CARD_SYNC_API_KEY;
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  return Boolean(expected && supplied && supplied === expected);
-}
-
 const ATTACHABLE_STATUSES = new Set(["draft", "generating", "submitted", "changes_requested"]);
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request)) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  const denied = authorizeCardSync(request);
+  if (denied) return denied;
 
   const payload = await request.json().catch(() => null) as AssetPayload | null;
   const syncKey = payload?.syncKey?.trim();
@@ -36,7 +31,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const supabase = createSupabaseAdmin();
+    const admin = createCardSyncAdmin();
+    if ("error" in admin) return admin.error;
+    const supabase = admin.supabase;
     const origin = siteOriginFromRequest(request);
 
     const { data: card, error: cardError } = await supabase

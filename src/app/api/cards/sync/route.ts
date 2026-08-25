@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { authorizeCardSync, createCardSyncAdmin } from "@/lib/card-sync-auth";
 import { publicCardAssetUrl } from "@/lib/card-registry";
 import {
   ArtworkIngestError,
@@ -80,15 +81,51 @@ type CardRow = {
   [key: string]: unknown;
 };
 
-function authorized(request: NextRequest) {
-  const expected = process.env.CARD_SYNC_API_KEY;
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  return Boolean(expected && supplied && supplied === expected);
-}
-
 function invalidPayload(payload: Partial<SyncPayload>) {
   return !payload.syncKey || !payload.card?.slug || !payload.card?.name ||
     !payload.operator?.callsign || !payload.operator?.slug || !payload.version?.typeLine;
+}
+
+/** Match existing roster rows case-insensitively and do not blank optional fields. */
+async function upsertOperator(
+  supabase: SupabaseClient,
+  operator: SyncPayload["operator"],
+  now: string
+) {
+  const { data: existing, error: lookupError } = await supabase
+    .from("operators")
+    .select("id, callsign, slug")
+    .ilike("callsign", operator.callsign)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+
+  const record: Record<string, unknown> = { updated_at: now };
+  if (!existing) {
+    record.callsign = operator.callsign;
+    record.slug = operator.slug;
+  }
+  if (operator.displayName !== undefined) record.display_name = operator.displayName;
+  if (operator.bio !== undefined) record.bio = operator.bio;
+  if (operator.teamRole !== undefined) record.team_role = operator.teamRole;
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from("operators")
+      .update(record)
+      .eq("id", existing.id)
+      .select("*")
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  const { data, error } = await supabase
+    .from("operators")
+    .insert(record)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 function decorateAssets(assets: AssetRow[] | null | undefined) {
@@ -125,27 +162,45 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function GET(request: NextRequest) {
-  if (!authorized(request)) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  const denied = authorizeCardSync(request);
+  if (denied) return denied;
 
   const syncKey = request.nextUrl.searchParams.get("syncKey")?.trim();
   const slug = request.nextUrl.searchParams.get("slug")?.trim();
-  if (!syncKey && !slug) return NextResponse.json({ error: "Provide syncKey or slug." }, { status: 400 });
+  if (!syncKey && !slug) {
+    const admin = createCardSyncAdmin();
+    if ("error" in admin) return admin.error;
+    return NextResponse.json({
+      ready: true,
+      configured: true,
+      message: "Card sync API is authenticated. Provide syncKey or slug to look up a card."
+    });
+  }
 
   try {
-    const supabase = createSupabaseAdmin();
+    const admin = createCardSyncAdmin();
+    if ("error" in admin) return admin.error;
+    const supabase = admin.supabase;
     const origin = siteOriginFromRequest(request);
     // `operators` is related to `cards` through two foreign keys
     // (cards.operator_id and operators.dossier_card_id), so the embed must be
     // disambiguated to the cards.operator_id relationship or PostgREST returns
-    // PGRST201 (ambiguous embedding).
+    // PGRST201 (ambiguous embedding). Same for card_versions (current vs
+    // canonical vs reverse card_id) and expansions.
     let query = supabase
       .from("cards")
-      .select("*, operators!cards_operator_id_fkey(*), card_versions!card_versions_card_id_fkey(*, card_assets(*)), expansions(*)")
+      .select("*, operators!cards_operator_id_fkey(*), card_versions!card_versions_card_id_fkey(*, card_assets(*)), expansions!cards_expansion_id_fkey(*)")
       .limit(10);
     if (syncKey) query = query.eq("sync_key", syncKey);
     if (slug) query = query.eq("slug", slug);
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error("Protected card lookup failed", error);
+      return NextResponse.json(
+        { error: "Unable to search the registry.", code: error.code ?? null },
+        { status: 500 }
+      );
+    }
     const matches = ((data ?? []) as CardRow[]).map((card) => decorateCard(card, origin));
     return NextResponse.json({ exists: Boolean(matches.length), matches });
   } catch (error) {
@@ -155,7 +210,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request)) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  const denied = authorizeCardSync(request);
+  if (denied) return denied;
 
   const payload = await request.json().catch(() => null) as SyncPayload | null;
   if (!payload || invalidPayload(payload)) {
@@ -171,23 +227,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const supabase = createSupabaseAdmin();
+    const admin = createCardSyncAdmin();
+    if ("error" in admin) return admin.error;
+    const supabase = admin.supabase;
     const origin = siteOriginFromRequest(request);
     const now = new Date().toISOString();
 
-    const { data: operator, error: operatorError } = await supabase
-      .from("operators")
-      .upsert({
-        callsign: payload.operator.callsign,
-        slug: payload.operator.slug,
-        display_name: payload.operator.displayName ?? null,
-        bio: payload.operator.bio ?? null,
-        team_role: payload.operator.teamRole ?? null,
-        updated_at: now
-      }, { onConflict: "callsign" })
-      .select("*")
-      .single();
-    if (operatorError) throw operatorError;
+    const operator = await upsertOperator(supabase, payload.operator, now);
 
     let expansionId: string | null = null;
     if (payload.expansion) {
