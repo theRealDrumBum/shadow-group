@@ -40,6 +40,7 @@ export async function POST(
     const artwork = await storeCardArtwork(auth.supabase, {
       cardId: version.card_id,
       versionId: version.id,
+      createdBy: auth.user.id,
       input: {
         kind,
         bytes,

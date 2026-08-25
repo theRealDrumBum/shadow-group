@@ -213,6 +213,7 @@ export async function storeCardArtwork(
     cardId: string;
     versionId: string;
     input: ArtworkInput;
+    createdBy?: string | null;
   }
 ): Promise<StoredArtwork> {
   const kind = normalizeKind(options.input.kind);
@@ -233,7 +234,8 @@ export async function storeCardArtwork(
       card_version_id: options.versionId,
       kind,
       storage_path: storagePath,
-      mime_type: mimeType
+      mime_type: mimeType,
+      created_by: options.createdBy ?? null
     })
     .select("id, kind, storage_path, mime_type")
     .single();

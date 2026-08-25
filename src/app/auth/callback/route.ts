@@ -11,14 +11,14 @@ export async function GET(request: Request) {
     : "/command";
 
   if (!code) {
-    return NextResponse.redirect(new URL("/?auth_error=missing_code", url.origin));
+    return NextResponse.redirect(new URL("/command/login?auth_error=missing_code", url.origin));
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(new URL("/?auth_error=callback_failed", url.origin));
+    return NextResponse.redirect(new URL("/command/login?auth_error=callback_failed", url.origin));
   }
 
   const {

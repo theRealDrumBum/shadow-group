@@ -36,7 +36,7 @@ type RsvpRow = {
 
 export default async function EventsPage() {
   const { user, profile } = await getAuthedUserAndProfile();
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
   if (!isApprovedAccount(profile)) redirect("/command");
   const isAdmin = profile?.role === "admin";
 

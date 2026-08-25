@@ -28,7 +28,7 @@ type OperatorRow = {
 
 export default async function RosterPage() {
   const { user, profile } = await getAuthedUserAndProfile();
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
   if (!isApprovedAdmin(profile)) redirect("/command");
 
   const admin = createSupabaseAdmin();

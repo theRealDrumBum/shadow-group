@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MemberProfilePage() {
   const { user, profile } = await getAuthedUserAndProfile();
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
   if (!isApprovedAccount(profile)) redirect("/command");
 
   return (

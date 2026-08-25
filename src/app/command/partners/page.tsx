@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PartnersPage() {
   const { user, profile } = await getAuthedUserAndProfile();
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
   if (!isApprovedAdmin(profile)) redirect("/command");
 
   const admin = createSupabaseAdmin();

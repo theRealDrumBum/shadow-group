@@ -52,7 +52,7 @@ function first<T>(value: T | T[] | null): T | null {
 export default async function CommandPage() {
   const { user, profile } = await getAuthedUserAndProfile();
 
-  if (!user) redirect("/");
+  if (!user) redirect("/command/login");
 
   const status = profile?.account_status ?? "pending";
   const role = profile?.role ?? "pending";
@@ -63,7 +63,7 @@ export default async function CommandPage() {
     return (
       <main className="section command-page">
         <div className="section-index">COMMAND ACCESS</div>
-        <span className="kicker">GOOGLE IDENTITY VERIFIED</span>
+        <span className="kicker">IDENTITY VERIFIED</span>
         <h1 className="page-title">Approval pending.</h1>
         <p>
           Signed in as {profile?.email ?? user.email}. Your Shadow Group role is
@@ -177,7 +177,7 @@ export default async function CommandPage() {
       <div className="section-index">COMMAND ACCESS // ADMIN</div>
       <div className="command-heading">
         <div>
-          <span className="kicker">GOOGLE IDENTITY VERIFIED // ADMINISTRATOR</span>
+          <span className="kicker">IDENTITY VERIFIED // ADMINISTRATOR</span>
           <h1 className="page-title">Command center.</h1>
           <p>Manage Shadow Group cards, personnel, events, recruiting, sponsors, and public team content.</p>
         </div>
