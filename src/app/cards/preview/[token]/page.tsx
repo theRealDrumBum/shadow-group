@@ -102,7 +102,8 @@ export default async function CardPreviewPage({ params }: { params: Promise<{ to
     role: operator?.team_role,
     image: artworkUrl,
     collectorNumber: cardRow.collector_number,
-    expansionCode: expansion?.code
+    expansionCode: expansion?.code,
+    rarity: version.rarity
   });
 
   const expansionLabel = expansion?.name

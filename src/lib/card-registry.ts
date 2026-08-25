@@ -37,13 +37,15 @@ export type CompleteCardRow = {
 };
 
 /**
- * Build a public URL for a card asset. Accepts either an already-absolute URL or
- * a storage path inside the public `card-assets` bucket. Returns null when the
- * Supabase URL is not configured or no path is provided.
+ * Build a public URL for a card asset. Accepts an already-absolute URL, a
+ * site-relative path (for bundled public/ files), or a storage path inside the
+ * public `card-assets` bucket. Returns null when the Supabase URL is not
+ * configured and the path is a storage object key.
  */
 export function publicCardAssetUrl(path: string | null | undefined): string | null {
   if (!path) return null;
   if (/^https?:\/\//i.test(path)) return path;
+  if (path.startsWith("/")) return path;
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!base) return null;
   const normalized = path.replace(/^\/+/, "");
@@ -75,20 +77,50 @@ function mapRowToCard(row: CompleteCardRow): OperatorCard {
     role: row.team_role,
     image: publicCardAssetUrl(row.image_path) ?? FALLBACK_IMAGE,
     collectorNumber: row.collector_number,
-    expansionCode: row.expansion_code
+    expansionCode: row.expansion_code,
+    expansionName: row.expansion_name,
+    rarity: row.rarity
   });
+}
+
+/** Extra approved-card metadata surfaced on the public detail page. */
+export type CardDetailExtras = {
+  rarity: string | null;
+  collectorNumber: string | null;
+  expansionCode: string | null;
+  expansionName: string | null;
+  publishedAt: string | null;
+};
+
+function extrasFromCard(card: OperatorCard): CardDetailExtras {
+  return {
+    rarity: card.rarity ?? null,
+    collectorNumber: card.collectorNumber ?? null,
+    expansionCode: card.expansionCode ?? null,
+    expansionName: card.expansionName ?? "Shadow Group Expansion",
+    publishedAt: null
+  };
+}
+
+/** Registry rows win on slug; bundled expansion cards fill any gaps and lead the gallery. */
+export function mergeGalleryCards(registry: OperatorCard[], bundled: OperatorCard[] = sampleCards): OperatorCard[] {
+  const bySlug = new Map(registry.map((card) => [card.slug, card]));
+  const head = bundled.map((card) => bySlug.get(card.slug) ?? card);
+  const bundledSlugs = new Set(bundled.map((card) => card.slug));
+  const tail = registry.filter((card) => !bundledSlugs.has(card.slug));
+  return [...head, ...tail];
 }
 
 export type GalleryResult = {
   cards: OperatorCard[];
-  /** "registry" when cards came from Supabase, "sample" when using seed data. */
-  source: "registry" | "sample";
+  /** "registry" when cards came from Supabase, "bundled" when using the expansion set in-repo. */
+  source: "registry" | "bundled";
 };
 
 /**
- * Approved canonical cards for the public gallery. Falls back to the bundled
- * sample roster when Supabase is not configured or no cards are published yet,
- * so the gallery always renders something meaningful.
+ * Approved canonical cards for the public gallery. Bundled expansion cards
+ * always appear; matching registry slugs replace the bundled copy, and extra
+ * approved cards append after the expansion set.
  */
 export async function getGalleryCards(): Promise<GalleryResult> {
   const supabase = getSupabase();
@@ -101,26 +133,20 @@ export async function getGalleryCards(): Promise<GalleryResult> {
     if (error) {
       console.error("Unable to load the card registry", error);
     } else if (data && data.length) {
-      return { cards: (data as unknown as CompleteCardRow[]).map(mapRowToCard), source: "registry" };
+      return {
+        cards: mergeGalleryCards((data as unknown as CompleteCardRow[]).map(mapRowToCard)),
+        source: "registry"
+      };
     }
   }
-  return { cards: sampleCards, source: "sample" };
+  return { cards: sampleCards, source: "bundled" };
 }
 
-/** A single approved card by slug, falling back to the sample roster. */
+/** A single approved card by slug, falling back to the bundled expansion set. */
 export async function getGalleryCardBySlug(slug: string): Promise<OperatorCard | null> {
   const detail = await getGalleryCardDetailBySlug(slug);
   return detail?.card ?? null;
 }
-
-/** Extra approved-card metadata surfaced on the public detail page. */
-export type CardDetailExtras = {
-  rarity: string | null;
-  collectorNumber: string | null;
-  expansionCode: string | null;
-  expansionName: string | null;
-  publishedAt: string | null;
-};
 
 export type CardDetail = {
   card: OperatorCard;
@@ -141,8 +167,8 @@ function mapRowToExtras(row: CompleteCardRow): CardDetailExtras {
 
 /**
  * A single approved card by slug with the extra metadata needed for the detail
- * page. Falls back to the bundled sample roster (with empty extras) so the page
- * renders even before Supabase is configured or populated.
+ * page. Falls back to the bundled expansion set so the page renders even before
+ * Supabase is configured or populated.
  */
 export async function getGalleryCardDetailBySlug(slug: string): Promise<CardDetail | null> {
   const supabase = getSupabase();
@@ -162,10 +188,10 @@ export async function getGalleryCardDetailBySlug(slug: string): Promise<CardDeta
     }
   }
 
-  const sample = sampleCards.find((card) => card.slug === slug);
-  if (!sample) return null;
+  const bundled = sampleCards.find((card) => card.slug === slug);
+  if (!bundled) return null;
   return {
-    card: sample,
-    extras: { rarity: null, collectorNumber: null, expansionCode: null, expansionName: null, publishedAt: null }
+    card: bundled,
+    extras: extrasFromCard(bundled)
   };
 }

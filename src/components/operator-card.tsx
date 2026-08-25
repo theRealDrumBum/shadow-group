@@ -1,5 +1,10 @@
 import Link from "next/link";
 import type { OperatorCard as Card } from "@/lib/data";
+import { showsPowerToughness } from "@/lib/card-face";
+
+function isPlaceholderArt(src: string) {
+  return /shadow[_-]?group[_-]?logo/i.test(src);
+}
 
 export function OperatorCard({
   card,
@@ -12,6 +17,8 @@ export function OperatorCard({
 }) {
   const expansion = card.expansionCode ?? "SG";
   const collector = card.collectorNumber ?? "—";
+  const showPT = showsPowerToughness(card.typeLine);
+  const placeholderArt = isPlaceholderArt(card.image);
   const article = (
     <article className="operator-card" data-colors={card.colors.join(" ")}>
       <div className="card-header">
@@ -19,11 +26,15 @@ export function OperatorCard({
           <span className="eyebrow">{card.callsign}</span>
           <h3>{card.name}</h3>
         </div>
-        <span className="mana">{card.manaCost}</span>
+        {card.manaCost ? <span className="mana">{card.manaCost}</span> : null}
       </div>
       <div className="card-art">
         {/* Plain img so ChatGPT-uploaded storage URLs and local Supabase work without next/image host allowlists. */}
-        <img src={card.image} alt={card.name} />
+        <img
+          src={card.image}
+          alt={card.name}
+          className={placeholderArt ? "is-placeholder" : undefined}
+        />
         <span className="role-tag">{card.role}</span>
       </div>
       <div className="type-line">{card.typeLine}</div>
@@ -32,8 +43,8 @@ export function OperatorCard({
         {card.flavor ? <p className="flavor">{card.flavor}</p> : null}
       </div>
       <div className="card-footer">
-        <span>{expansion} • {collector}</span>
-        <strong>{card.power}/{card.toughness}</strong>
+        <span>{expansion} • {collector}{card.rarity ? ` ${card.rarity.charAt(0).toUpperCase()}` : ""}</span>
+        {showPT ? <strong>{card.power}/{card.toughness}</strong> : null}
       </div>
     </article>
   );
