@@ -9,7 +9,6 @@ import {
   Handshake,
   Users,
 } from "lucide-react";
-import { CardForgeCta } from "@/components/card-forge-cta";
 import { EventCard } from "@/components/event-card";
 import { FeaturedCanon } from "@/components/featured-canon";
 import { CommandAccessButton } from "@/components/google-login-button";
@@ -252,12 +251,9 @@ export default async function Home({
             <h2>Shadow Group Card Archive</h2>
             <p>Our custom Magic-style cards are a side project built around team personalities and history.</p>
           </div>
-          <div className="card-archive-links">
-            <Link href="/cards" className="text-link">
-              Open card archive <ArrowUpRight size={16} />
-            </Link>
-            <CardForgeCta variant="inline" />
-          </div>
+          <Link href="/cards" className="text-link">
+            Open card archive <ArrowUpRight size={16} />
+          </Link>
         </div>
         <div className="command-panel card-project-panel">
           <div className="panel-label">

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowLeft, Shield } from "lucide-react";
-import { CardForgeCta } from "@/components/card-forge-cta";
 import { getGalleryCards } from "@/lib/card-registry";
 import { CardGallery } from "./card-gallery";
 import "./cards.css";
@@ -23,7 +22,6 @@ export default async function CardsPage() {
           Approved cards from the Shadow Group registry. New cards are submitted through Cardsmith
           and appear here after command signs off.
         </p>
-        <CardForgeCta />
         <CardGallery cards={cards} />
       </section>
     </main>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
-import { CARDSMITH_GPT_URL } from "@/lib/cardsmith";
+import { CARD_FORGE_GPT_URL } from "@/lib/cardsmith";
 import { createOptionalClient } from "@/lib/supabase/client";
 
 export type CommandAccess = "admin" | "member" | "guest";
@@ -74,11 +74,10 @@ export function CommandShell({ access }: { access: CommandAccess }) {
       <div className="command-shell-actions">
         {access === "admin" || access === "member" ? (
           <a
-            href={CARDSMITH_GPT_URL}
+            href={CARD_FORGE_GPT_URL}
             className="command-shell-site"
             target="_blank"
             rel="noreferrer noopener"
-            title="Opens ChatGPT. Unofficial fan-made — not Wizards of the Coast."
           >
             Card Forge
           </a>

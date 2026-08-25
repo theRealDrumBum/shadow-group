@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { CardForgeCta } from "@/components/card-forge-cta";
 import { OperatorCard } from "@/components/operator-card";
 import type { OperatorCard as Card } from "@/lib/data";
 
@@ -59,9 +58,8 @@ export function CardGallery({ cards }: { cards: Card[] }) {
         </div>
       ) : cards.length === 0 ? (
         <div className="notice">
-          No approved cards are in the registry yet. Design one in Card Forge, then command can
-          approve it for this archive — the stored Magic card image is what visitors see here.
-          <CardForgeCta variant="inline" />
+          No approved cards are in the registry yet. Submit a card through Cardsmith, then approve
+          it in Command — the stored Magic card image is what visitors see here.
         </div>
       ) : (
         <div className="notice">

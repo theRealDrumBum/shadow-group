@@ -409,20 +409,6 @@
 
 /* Homepage card-archive feature panel width */
 .card-project-panel { max-width: 520px; margin: 0 auto; }
-.card-archive-links {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-}
-.card-archive-links .card-forge-cta--inline {
-  align-items: flex-end;
-  margin-top: 0;
-}
-.card-archive-links .card-forge-note {
-  text-align: right;
-  max-width: 260px;
-}
 
 /* ---------- Responsive ---------- */
 /* Large tablet / small desktop (~1024px): two-column hero, two cards per row */

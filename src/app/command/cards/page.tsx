@@ -3,7 +3,7 @@ import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-pro
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { publicCardAssetUrl } from "@/lib/card-registry";
 import { pickPrimaryAssetUrl } from "@/lib/card-assets";
-import { CardForgeCta } from "@/components/card-forge-cta";
+import { CardForgeLink } from "../card-forge-link";
 import { CommandPageHeader } from "../command-header";
 import { CardWorkspace } from "./card-workspace";
 import type { ReviewCard, ReviewVersion } from "./card-review-queue";
@@ -111,7 +111,7 @@ export default async function CardWorkflowPage({ searchParams }: CardWorkflowPag
         kicker="Cards"
         title="Cards"
         description="Read a finished render into the form, ask Cardsmith to draft one, then review and publish. Approving a version puts it in the public gallery."
-        actions={<CardForgeCta variant="compact" />}
+        actions={<CardForgeLink />}
       />
       <div className="workflow-summary">
         <div className="workflow-metric">
