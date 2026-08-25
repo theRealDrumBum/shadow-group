@@ -5,6 +5,10 @@ Group Card Registry API so the GPT can create cards, propose new versions, and
 check approval status — while **only a Shadow Group administrator** can approve a
 version and publish it to the public Card Gallery.
 
+Use **Custom GPT Actions** (OpenAPI + Bearer API key). Do not add an MCP server
+for this. ChatGPT custom GPTs call HTTP Actions; MCP is a different protocol
+used by Cursor/Claude, not by the Cardsmith GPT.
+
 You do **not** need to write code. You do need:
 
 - The deployed site URL (your Vercel domain).
@@ -94,6 +98,23 @@ Preview):
 
 Redeploy the project after saving.
 
+Then confirm the production API is actually wired. From a terminal:
+
+```bash
+# 1. Auth + Supabase are configured (expect {"ready":true,"configured":true})
+curl -sS -H "Authorization: Bearer $CARD_SYNC_API_KEY" \
+  https://YOUR-DOMAIN.vercel.app/api/cards/sync
+
+# 2. Lookup a card that does not exist yet (expect {"exists":false,"matches":[]})
+curl -sS -H "Authorization: Bearer $CARD_SYNC_API_KEY" \
+  "https://YOUR-DOMAIN.vercel.app/api/cards/sync?syncKey=shadow-group:sins:sins-seven-deadly-specialist"
+```
+
+- `503` + `CARD_SYNC_API_KEY is not configured` → add the key in Vercel (Production) and redeploy.
+- `503` + `Supabase is not configured` → add the three Supabase values and redeploy.
+- `401 Unauthorized` → the Bearer token does not match `CARD_SYNC_API_KEY`.
+- `200` ready → ChatGPT Actions can be pointed at this URL.
+
 ### 2d. Bootstrap the administrator
 
 Admin approval requires a Supabase profile with `role = 'admin'` and
@@ -148,11 +169,13 @@ with Google once so their profile is provisioned.
 
 ### Test it
 
-Use the **Test** button on `findCardInRegistry` with a `syncKey` like
-`shadow-group:sins:sins-combat-controller`. A `200` with
-`{"exists": false, "matches": []}` (or a match) means auth and the URL are
-correct. A `401` means the API key is wrong; a `404`/`DNS` error means the server
-URL is wrong.
+Use the **Test** button on `findCardInRegistry` with no parameters first. A `200`
+with `{"ready": true, "configured": true}` means the server URL, API key, and
+Supabase connection are all working. Then test with a `syncKey` like
+`shadow-group:sins:sins-seven-deadly-specialist`. `{"exists": false, "matches": []}`
+(or a match) means lookup works. A `401` means the API key is wrong; a `503`
+means a Vercel env var is missing; a `404`/`DNS` error means the server URL is
+wrong.
 
 Then test `synchronizeCard` with a complete payload that includes
 `version.artworkUrl` or `version.artworkBase64`. The response should include
