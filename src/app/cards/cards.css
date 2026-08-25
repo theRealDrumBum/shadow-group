@@ -173,6 +173,26 @@
   opacity: 0.9;
   background: radial-gradient(circle at 50% 35%, rgba(84, 64, 90, 0.45), #0a0b0a 62%);
 }
+
+/* Finished Magic card stored in Supabase — display the file, do not rebuild a face around it. */
+.operator-card-render {
+  padding: 0;
+  gap: 0;
+  border: none;
+  background: transparent;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  clip-path: none;
+  overflow: hidden;
+  border-radius: 14px;
+}
+.operator-card-render img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 63 / 88;
+  object-fit: contain;
+  background: #0a0b0a;
+}
 .rules-box {
   flex: 1;
   display: flex;

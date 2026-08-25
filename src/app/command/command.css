@@ -41,6 +41,7 @@
 .review-version-body{display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:18px;align-items:start;margin-top:12px}
 .review-card-preview{display:grid;gap:10px;align-content:start}
 .review-card-preview .operator-card{font-size:13px}
+.review-card-preview .operator-card-render{max-width:280px}
 .review-preview-link{font-size:11px}
 .review-version-copy{min-width:0}
 .review-action-approve{border-color:rgba(143,211,154,.5);color:#8fd39a}

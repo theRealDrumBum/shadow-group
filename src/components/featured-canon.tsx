@@ -44,10 +44,11 @@ export function FeaturedCanon() {
   const name = card.card_name ?? card.name ?? "CLASSIFIED OPERATOR";
   const callsign = card.operator_callsign ?? card.callsign ?? "UNKNOWN";
   const image = card.render_url ?? card.image_url;
+  const hasArt = Boolean(image) && !/shadow[_-]?group[_-]?logo/i.test(image ?? "");
 
   return (
     <Link href={`/cards/${card.slug ?? ""}`} className="canon-card">
-      {image ? <img src={image} alt={name} /> : <div className="canon-art-fallback"><img src="/shadow-group-logo.svg" alt="" /></div>}
+      {hasArt ? <img src={image} alt={name} /> : <div className="canon-art-fallback"><img src="/shadow-group-logo.svg" alt="" /></div>}
       <div className="canon-overlay">
         <span>{card.expansion_code ?? "SG"} // {card.collector_number ?? "UNASSIGNED"}</span>
         <h3>{name}</h3>

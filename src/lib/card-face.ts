@@ -1,8 +1,17 @@
 import type { OperatorCard } from "@/lib/data";
 
-const FALLBACK_IMAGE = "/shadow-group-logo.svg";
+/** True when the src is missing or is the site logo used as a stand-in. */
+export function isPlaceholderArt(src: string | null | undefined): boolean {
+  if (!src) return true;
+  return /shadow[_-]?group[_-]?logo/i.test(src);
+}
 
-/** Build the MTG-style card face used in the gallery, preview page, and admin review. */
+/** Stored Magic card image from Supabase — show it as the card, not as inset art. */
+export function hasStoredCardImage(card: Pick<OperatorCard, "image">): boolean {
+  return Boolean(card.image) && !isPlaceholderArt(card.image);
+}
+
+/** Build the gallery/preview/admin card model from registry or version rows. */
 export function toOperatorCard(input: {
   slug: string;
   name: string;
@@ -16,11 +25,13 @@ export function toOperatorCard(input: {
   colors?: string[] | null;
   role?: string | null;
   image?: string | null;
+  imageKind?: string | null;
   collectorNumber?: string | null;
   expansionCode?: string | null;
   expansionName?: string | null;
   rarity?: string | null;
 }): OperatorCard {
+  const image = input.image && !isPlaceholderArt(input.image) ? input.image : "";
   return {
     slug: input.slug,
     name: input.name,
@@ -33,7 +44,8 @@ export function toOperatorCard(input: {
     toughness: input.toughness ?? "—",
     colors: input.colors ?? [],
     role: input.role ?? "Shadow Group Operator",
-    image: input.image || FALLBACK_IMAGE,
+    image,
+    imageKind: input.imageKind ?? null,
     collectorNumber: input.collectorNumber ?? null,
     expansionCode: input.expansionCode ?? null,
     expansionName: input.expansionName ?? null,
