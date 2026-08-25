@@ -56,11 +56,6 @@ export function CardGallery({ cards }: { cards: Card[] }) {
             <OperatorCard key={card.slug} card={card} />
           ))}
         </div>
-      ) : cards.length === 0 ? (
-        <div className="notice">
-          No approved cards are in the registry yet. Submit a card through Cardsmith, then approve
-          it in Command — the stored Magic card image is what visitors see here.
-        </div>
       ) : (
         <div className="notice">
           No records match “{query.trim()}”. Try a different callsign, role, or card name.

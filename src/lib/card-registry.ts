@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { toOperatorCard } from "@/lib/card-face";
-import type { OperatorCard } from "@/lib/data";
+import { hasStoredCardImage, toOperatorCard } from "@/lib/card-face";
+import { cards as bundledCards, type OperatorCard } from "@/lib/data";
 
 const CARD_ASSET_BUCKET = "card-assets";
 
@@ -106,37 +106,63 @@ function extrasFromRow(row: CompleteCardRow): CardDetailExtras {
   };
 }
 
+function extrasFromCard(card: OperatorCard): CardDetailExtras {
+  return {
+    rarity: card.rarity ?? null,
+    collectorNumber: card.collectorNumber ?? null,
+    expansionCode: card.expansionCode ?? null,
+    expansionName: card.expansionName ?? "Shadow Group Expansion",
+    publishedAt: null
+  };
+}
+
+/** Prefer a stored registry image; otherwise keep the bundled Magic card render. */
+function preferLiveImage(bundled: OperatorCard, live: OperatorCard): OperatorCard {
+  if (hasStoredCardImage(live)) return live;
+  return { ...live, image: bundled.image, imageKind: bundled.imageKind ?? "render" };
+}
+
+/** Registry rows win on slug when they have a stored image; bundled expansion cards fill the rest. */
+export function mergeGalleryCards(registry: OperatorCard[], bundled: OperatorCard[] = bundledCards): OperatorCard[] {
+  const bySlug = new Map(registry.map((card) => [card.slug, card]));
+  const head = bundled.map((card) => {
+    const live = bySlug.get(card.slug);
+    return live ? preferLiveImage(card, live) : card;
+  });
+  const bundledSlugs = new Set(bundled.map((card) => card.slug));
+  const tail = registry.filter((card) => !bundledSlugs.has(card.slug));
+  return [...head, ...tail];
+}
+
 export type GalleryResult = {
   cards: OperatorCard[];
-  /** "registry" when cards came from Supabase; "empty" when none are approved or Supabase is unset. */
-  source: "registry" | "empty";
+  /** "registry" when any cards came from Supabase; "bundled" when using the expansion set in-repo. */
+  source: "registry" | "bundled";
 };
 
 /**
- * Approved canonical cards for the public gallery. Cards live in Supabase
- * (Cardsmith / ChatGPT sync); the site does not ship sample canon in-repo.
+ * Approved canonical cards for the public gallery. Bundled expansion renders
+ * always appear; matching registry slugs replace the bundled copy when they
+ * have a stored Magic card image.
  */
 export async function getGalleryCards(): Promise<GalleryResult> {
   const supabase = getSupabase();
-  if (!supabase) {
-    return { cards: [], source: "empty" };
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("complete_cards")
+      .select(COMPLETE_CARD_COLUMNS)
+      .order("published_at", { ascending: false, nullsFirst: false });
+
+    if (error) {
+      console.error("Unable to load the card registry", error);
+    } else if (data) {
+      return {
+        cards: mergeGalleryCards((data as unknown as CompleteCardRow[]).map(mapRowToCard)),
+        source: "registry"
+      };
+    }
   }
-
-  const { data, error } = await supabase
-    .from("complete_cards")
-    .select(COMPLETE_CARD_COLUMNS)
-    .order("published_at", { ascending: false, nullsFirst: false });
-
-  if (error) {
-    console.error("Unable to load the card registry", error);
-    return { cards: [], source: "empty" };
-  }
-
-  const cards = (data as unknown as CompleteCardRow[] ?? []).map(mapRowToCard);
-  return {
-    cards,
-    source: cards.length ? "registry" : "empty"
-  };
+  return { cards: bundledCards, source: "bundled" };
 }
 
 export type CardDetail = {
@@ -152,25 +178,30 @@ export async function getGalleryCardBySlug(slug: string): Promise<OperatorCard |
 
 /**
  * A single approved card by slug with the extra metadata needed for the detail
- * page. Unapproved or missing cards 404 — they are not replaced with in-repo samples.
+ * page. Falls back to the bundled expansion set so the page renders even before
+ * Supabase is configured or populated.
  */
 export async function getGalleryCardDetailBySlug(slug: string): Promise<CardDetail | null> {
+  const bundled = bundledCards.find((card) => card.slug === slug) ?? null;
   const supabase = getSupabase();
-  if (!supabase) return null;
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("complete_cards")
+      .select(COMPLETE_CARD_COLUMNS)
+      .eq("slug", slug)
+      .limit(1)
+      .maybeSingle();
 
-  const { data, error } = await supabase
-    .from("complete_cards")
-    .select(COMPLETE_CARD_COLUMNS)
-    .eq("slug", slug)
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Unable to load card detail", error);
-    return null;
+    if (error) {
+      console.error("Unable to load card detail", error);
+    } else if (data) {
+      const row = data as unknown as CompleteCardRow;
+      const live = mapRowToCard(row);
+      const card = bundled ? preferLiveImage(bundled, live) : live;
+      return { card, extras: extrasFromRow(row) };
+    }
   }
-  if (!data) return null;
 
-  const row = data as unknown as CompleteCardRow;
-  return { card: mapRowToCard(row), extras: extrasFromRow(row) };
+  if (!bundled) return null;
+  return { card: bundled, extras: extrasFromCard(bundled) };
 }
