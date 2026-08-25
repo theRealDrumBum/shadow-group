@@ -7,7 +7,7 @@ import "./cards.css";
 export const dynamic = "force-dynamic";
 
 export default async function CardsPage() {
-  const { cards, source } = await getGalleryCards();
+  const { cards } = await getGalleryCards();
 
   return (
     <main>
@@ -19,15 +19,9 @@ export default async function CardsPage() {
         <span className="kicker">SHADOW GROUP // ARCHIVE</span>
         <h1 className="page-title">Card Registry</h1>
         <p className="registry-lead">
-          Every approved operator card in the Shadow Group canon. Cards are proposed through the Cardsmith GPT,
-          reviewed by command, and published here once approved.
+          Every operator card in the Shadow Group Expansion, plus additional cards approved through
+          the Cardsmith workflow.
         </p>
-        {source === "sample" ? (
-          <div className="notice">
-            Showing sample cards. Approved cards published through the Cardsmith workflow will appear here
-            automatically once the registry has canonical entries.
-          </div>
-        ) : null}
         <CardGallery cards={cards} />
       </section>
     </main>

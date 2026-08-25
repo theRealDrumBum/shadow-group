@@ -183,7 +183,8 @@ export function CardReviewQueue({ cards }: { cards: ReviewCard[] }) {
                 role: version.role,
                 image: version.artworkUrl,
                 collectorNumber: version.collectorNumber,
-                expansionCode: version.expansionCode
+                expansionCode: version.expansionCode,
+                rarity: version.rarity
               });
               return (
                 <div className="review-version" key={version.id}>

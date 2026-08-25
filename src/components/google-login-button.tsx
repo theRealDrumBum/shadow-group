@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LogIn, LogOut, ShieldCheck } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createOptionalClient } from "@/lib/supabase/client";
+import { hasPublicSupabaseConfig } from "@/lib/supabase/config";
 
 type GoogleLoginButtonProps = {
   initiallyAuthenticated?: boolean;
@@ -16,7 +17,11 @@ export function GoogleLoginButton({ initiallyAuthenticated = false }: GoogleLogi
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createOptionalClient();
+    if (!supabase) {
+      setCheckingSession(false);
+      return;
+    }
 
     if (!initiallyAuthenticated) {
       supabase.auth.getUser().then(({ data }) => {
@@ -38,7 +43,8 @@ export function GoogleLoginButton({ initiallyAuthenticated = false }: GoogleLogi
     setError(null);
 
     try {
-      const supabase = createClient();
+      const supabase = createOptionalClient();
+      if (!supabase) throw new Error("Command access is not configured.");
       const redirectTo = `${window.location.origin}/auth/callback?next=/command`;
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -63,7 +69,8 @@ export function GoogleLoginButton({ initiallyAuthenticated = false }: GoogleLogi
     setError(null);
 
     try {
-      const supabase = createClient();
+      const supabase = createOptionalClient();
+      if (!supabase) throw new Error("Command access is not configured.");
       const { error: authError } = await supabase.auth.signOut({ scope: "local" });
       if (authError) throw authError;
       setAuthenticated(false);
@@ -72,6 +79,10 @@ export function GoogleLoginButton({ initiallyAuthenticated = false }: GoogleLogi
       setError(cause instanceof Error ? cause.message : "Unable to sign out.");
       setLoading(false);
     }
+  }
+
+  if (!hasPublicSupabaseConfig()) {
+    return null;
   }
 
   if (checkingSession) {

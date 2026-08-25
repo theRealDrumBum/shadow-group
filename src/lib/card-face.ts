@@ -18,6 +18,8 @@ export function toOperatorCard(input: {
   image?: string | null;
   collectorNumber?: string | null;
   expansionCode?: string | null;
+  expansionName?: string | null;
+  rarity?: string | null;
 }): OperatorCard {
   return {
     slug: input.slug,
@@ -33,6 +35,16 @@ export function toOperatorCard(input: {
     role: input.role ?? "Shadow Group Operator",
     image: input.image || FALLBACK_IMAGE,
     collectorNumber: input.collectorNumber ?? null,
-    expansionCode: input.expansionCode ?? null
+    expansionCode: input.expansionCode ?? null,
+    expansionName: input.expansionName ?? null,
+    rarity: input.rarity ?? null
   };
+}
+
+/** Lands (and other non-creature, non-vehicle cards) do not show power/toughness. */
+export function showsPowerToughness(typeLine: string | null | undefined): boolean {
+  const type = typeLine ?? "";
+  if (/\b(creature|vehicle)\b/i.test(type)) return true;
+  if (/\bland\b/i.test(type)) return false;
+  return Boolean(type);
 }

@@ -1,28 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { publicCardAssetUrl } from "@/lib/card-registry";
+import { getGalleryCards } from "@/lib/card-registry";
+import type { OperatorCard } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
+function toCanonPayload(card: OperatorCard) {
+  return {
+    slug: card.slug,
+    name: card.name,
+    card_name: card.name,
+    callsign: card.callsign,
+    operator_callsign: card.callsign,
+    type_line: card.typeLine,
+    expansion_code: card.expansionCode ?? "SG",
+    collector_number: card.collectorNumber,
+    rarity: card.rarity,
+    render_url: card.image,
+    image_url: card.image
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseAdmin();
     const expansion = request.nextUrl.searchParams.get("expansion")?.trim().toUpperCase();
+    const { cards } = await getGalleryCards();
+    const pool = expansion
+      ? cards.filter((card) => (card.expansionCode ?? "SG").toUpperCase() === expansion)
+      : cards;
 
-    let query = supabase.from("complete_cards").select("*");
-    if (expansion) query = query.eq("expansion_code", expansion);
-
-    const { data, error } = await query;
-    if (error) throw error;
-
-    if (!data?.length) {
+    if (!pool.length) {
       return NextResponse.json({ card: null, count: 0 }, { status: 200 });
     }
 
-    const picked = data[Math.floor(Math.random() * data.length)] as { image_path?: string | null };
-    const card = { ...picked, render_url: publicCardAssetUrl(picked.image_path) };
+    const picked = pool[Math.floor(Math.random() * pool.length)];
     return NextResponse.json(
-      { card, count: data.length },
+      { card: toCanonPayload(picked), count: pool.length },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {

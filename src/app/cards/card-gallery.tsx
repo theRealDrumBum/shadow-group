@@ -17,6 +17,9 @@ export function CardGallery({ cards }: { cards: Card[] }) {
         card.callsign,
         card.role,
         card.typeLine,
+        card.collectorNumber,
+        card.expansionCode,
+        card.rarity,
         card.flavor,
         ...card.colors,
         ...card.rules
