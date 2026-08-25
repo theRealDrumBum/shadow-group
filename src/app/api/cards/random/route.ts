@@ -15,8 +15,8 @@ function toCanonPayload(card: OperatorCard) {
     expansion_code: card.expansionCode ?? "SG",
     collector_number: card.collectorNumber,
     rarity: card.rarity,
-    render_url: card.image,
-    image_url: card.image
+    render_url: card.image || null,
+    image_url: card.image || null
   };
 }
 

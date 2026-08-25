@@ -197,7 +197,8 @@ function normalizeKind(kind?: ArtworkKind | null): ArtworkKind {
   if (kind && ["reference", "artwork", "render", "thumbnail", "alternate"].includes(kind)) {
     return kind;
   }
-  return "artwork";
+  // Cardsmith / ChatGPT uploads a finished Magic card unless a kind is set.
+  return "render";
 }
 
 export async function storeCardArtwork(
@@ -254,7 +255,7 @@ export function collectArtworkInputs(payload: {
   const version = payload.version;
   if (version?.artworkUrl || version?.artworkBase64) {
     inputs.push({
-      kind: "artwork",
+      kind: "render",
       url: version.artworkUrl,
       base64: version.artworkBase64,
       mimeType: version.artworkMimeType
@@ -271,7 +272,7 @@ export function collectArtworkInputs(payload: {
     )
     : null;
   if (rendererArt && !inputs.some((item) => item.url === rendererArt)) {
-    inputs.push({ kind: "artwork", url: rendererArt });
+    inputs.push({ kind: "render", url: rendererArt });
   }
 
   for (const asset of payload.assets ?? []) {

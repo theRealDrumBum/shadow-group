@@ -19,8 +19,8 @@ export default async function CardsPage() {
         <span className="kicker">SHADOW GROUP // ARCHIVE</span>
         <h1 className="page-title">Card Registry</h1>
         <p className="registry-lead">
-          Every operator card in the Shadow Group Expansion, plus additional cards approved through
-          the Cardsmith workflow.
+          Approved cards from the Shadow Group registry. New cards are submitted through Cardsmith
+          and appear here after command signs off.
         </p>
         <CardGallery cards={cards} />
       </section>
