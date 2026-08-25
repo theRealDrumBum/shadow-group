@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { ProfileReviewQueue, type ProfileSubmission } from "./profile-review-queue";
 
@@ -24,11 +24,9 @@ type SubmissionRow = {
 };
 
 export default async function ProfileReviewPage() {
-  const session = await createClient();
-  const { data: { user } } = await session.auth.getUser();
+  const { user, profile } = await getAuthedUserAndProfile();
   if (!user) redirect("/command/login");
-  const { data: profile } = await session.from("profiles").select("role,account_status").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin" || profile.account_status !== "approved") redirect("/command");
+  if (!isApprovedAdmin(profile)) redirect("/command");
 
   const admin = createSupabaseAdmin();
   const { data } = await admin

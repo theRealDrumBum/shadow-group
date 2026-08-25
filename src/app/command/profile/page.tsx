@@ -1,23 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthedUserAndProfile, isApprovedAccount } from "@/lib/auth/session-profile";
 import { MemberProfileForm } from "./member-profile-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function MemberProfilePage() {
-  const session = await createClient();
-  const { data: { user } } = await session.auth.getUser();
+  const { user, profile } = await getAuthedUserAndProfile();
   if (!user) redirect("/command/login");
-
-  const { data: profile } = await session
-    .from("profiles")
-    .select("account_status")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profile?.account_status !== "approved") redirect("/command");
+  if (!isApprovedAccount(profile)) redirect("/command");
 
   return (
     <main className="section command-page">

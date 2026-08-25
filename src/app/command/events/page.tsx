@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthedUserAndProfile, isApprovedAccount } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { EventsConsole, type EventItem, type RsvpEntry, type MyStats } from "./events-console";
 
@@ -35,16 +35,10 @@ type RsvpRow = {
 };
 
 export default async function EventsPage() {
-  const session = await createClient();
-  const { data: { user } } = await session.auth.getUser();
+  const { user, profile } = await getAuthedUserAndProfile();
   if (!user) redirect("/command/login");
-  const { data: profile } = await session
-    .from("profiles")
-    .select("role,account_status")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profile?.account_status !== "approved") redirect("/command");
-  const isAdmin = profile.role === "admin";
+  if (!isApprovedAccount(profile)) redirect("/command");
+  const isAdmin = profile?.role === "admin";
 
   const admin = createSupabaseAdmin();
   const [{ data: eventRows }, { data: rsvpRows }, { count: rosterCount }] = await Promise.all([
