@@ -5,9 +5,6 @@ Group Card Registry API so the GPT can create cards, propose new versions, and
 check approval status — while **only a Shadow Group administrator** can approve a
 version and publish it to the public Card Gallery.
 
-Signed-in approved operators can open Card Forge from Command (nav and
-member/admin cards). The public card gallery does not show that link.
-
 Use **Custom GPT Actions** (OpenAPI + Bearer API key). Do not add an MCP server
 for this. ChatGPT custom GPTs call HTTP Actions; MCP is a different protocol
 used by Cursor/Claude, not by the Cardsmith GPT.

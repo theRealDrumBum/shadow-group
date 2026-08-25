@@ -1,7 +1,7 @@
 import { parseColors, parseRules } from "@/lib/card-admin";
 
-/** Custom GPT Card Forge. Link this only for signed-in approved Command users. */
-export const CARD_FORGE_GPT_URL =
+/** Public Custom GPT (Card Forge) for designing Shadow Group cards. */
+export const CARDSMITH_GPT_URL =
   "https://chatgpt.com/g/g-6a6564d8d0d08191bcef3552a372250d-shadow-group-card-forge";
 
 export type CardsmithDraft = {

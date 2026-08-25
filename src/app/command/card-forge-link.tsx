@@ -1,5 +1,5 @@
 import { ExternalLink } from "lucide-react";
-import { CARD_FORGE_GPT_URL } from "@/lib/cardsmith";
+import { CARDSMITH_GPT_URL } from "@/lib/cardsmith";
 
 export function CardForgeLink({
   className = "button secondary",
@@ -10,10 +10,11 @@ export function CardForgeLink({
 }) {
   return (
     <a
-      href={CARD_FORGE_GPT_URL}
+      href={CARDSMITH_GPT_URL}
       className={className}
       target="_blank"
       rel="noreferrer noopener"
+      title="Opens ChatGPT. Unofficial fan-made — not Wizards of the Coast."
     >
       {label} <ExternalLink size={14} />
     </a>
