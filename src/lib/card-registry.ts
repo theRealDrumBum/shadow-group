@@ -63,7 +63,7 @@ function getSupabase() {
 }
 
 const COMPLETE_CARD_COLUMNS =
-  "slug,name,callsign,team_role,type_line,mana_cost,color_identity,rules_text,flavor_text,power,toughness,rarity,collector_number,expansion_code,expansion_name,image_path,published_at";
+  "slug,name,callsign,team_role,type_line,mana_cost,color_identity,rules_text,flavor_text,power,toughness,rarity,collector_number,expansion_code,expansion_name,image_path,image_kind,published_at";
 
 function mapRowToCard(row: CompleteCardRow): OperatorCard {
   return toOperatorCard({

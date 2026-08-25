@@ -44,6 +44,7 @@ Import the GitHub repository into Vercel and add the same environment variables 
 3. On the site, open **Command Access** → `/command/login`.
 4. First visit: **Create allowlisted account** with that email and a password, then you are signed in.
 5. Later visits: sign in with email and password. Google is optional if the provider is enabled in Supabase Auth.
+6. If the email already has a Google-only auth user, use **Forgot password** (or set a password on that user in the Supabase dashboard) instead of Create account.
 
 At `/command/cards` you can add cards, edit text, **upload/replace the finished Magic card image** (stored in the `card-assets` bucket as kind `render`), and approve/reject versions. Uploading onto an already-approved version updates the public gallery immediately.
 

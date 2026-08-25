@@ -142,7 +142,9 @@ export function LoginForm({ nextPath, initialError, configured }: LoginFormProps
       </div>
       <p className="form-hint">
         Use the email on the command allowlist (admin accounts can manage cards). First time here?
-        Create an allowlisted account with the same password you want to use, then you are signed in.
+        Create an allowlisted account with the password you want, then you are signed in.
+        If you already signed in with Google, use Forgot password to add an email password —
+        Google is optional and does nothing when the provider is not configured.
       </p>
       {error ? <div className="notice" role="alert">{error}</div> : null}
       {notice ? <p className="form-success">{notice}</p> : null}
