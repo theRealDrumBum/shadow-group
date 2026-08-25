@@ -1,8 +1,9 @@
 # Shadow Group Cardsmith — Custom GPT Setup Guide
 
-This guide walks you through connecting a custom ChatGPT ("GPT") to the Shadow
-Group Card Registry API so the GPT can create cards, propose new versions, and
-check approval status — while **only a Shadow Group administrator** can approve a
+This guide walks you through connecting a custom ChatGPT ("GPT") — Shadow Group
+Cardsmith, also called Card Forge — to the Shadow Group Card Registry API. The
+GPT interviews operators, designs unofficial Magic-style cards, generates art,
+and syncs proposed versions. **Only a Shadow Group administrator** can approve a
 version and publish it to the public Card Gallery.
 
 Use **Custom GPT Actions** (OpenAPI + Bearer API key). Do not add an MCP server
@@ -40,8 +41,17 @@ Admin ──(signed in on the website)──▶ /command/cards
 Custom GPT ──(Bearer CARD_SYNC_API_KEY)──▶ GET /api/cards/sync?syncKey=...
    reads each version's status + review_notes + previewUrl → iterates on rejections
 
+Custom GPT ──▶ GET /api/cards  (listApprovedCards)
+   public canon only; use this when the user asks to list the expansion.
+   Unapproved work is preview-only until an admin approves it.
+
 Public ──▶ Card Gallery (/cards) shows only approved canonical versions
 ```
+
+The GPT's configured Actions are this API only. They cannot write a Google
+Sheet. Interview facts belong on the sync payload (`facts` / `factsSnapshot`).
+An optional human-maintained sheet may back up operator facts; it is not canon
+and must not replace `POST /api/cards/sync`.
 
 Key rules the API enforces:
 
@@ -131,12 +141,16 @@ with Google once so their profile is provisioned.
    <https://chatgpt.com/gpts/editor>).
 2. Switch to the **Configure** tab.
 3. **Name**: `Shadow Group Cardsmith`.
-4. **Description**: `Designs, revises, and syncs Shadow Group trading cards.`
+4. **Description**: `Interviews operators, designs unofficial Magic-style Shadow Group cards, generates art, and syncs them to the website registry for admin approval.`
 5. **Instructions**: paste the full contents of
    [`custom-gpt-instructions.md`](./custom-gpt-instructions.md). These tell the
-   GPT how to build `sync_key`s, always look up before creating, never claim a
-   card is canon, and how to iterate on rejections.
-6. **Capabilities**: enable *Image Generation* (required for card art) and *Web Browsing* if you want the GPT to look up reference photos.
+   GPT to lead the operator interview, present three concepts, generate likeness
+   art from a face reference, GET before every POST, never claim a card is canon,
+   and iterate on `review_notes`.
+6. **Knowledge** (optional): upload the file **ShadowGroup - Magic GPT Design
+   Reference** if you have it. The instructions tell the GPT to treat it as extra
+   set-design rules. It does not replace the Card Sync protocol.
+7. **Capabilities**: enable *Image Generation* (required for card art) and *Web Browsing* if you want the GPT to look up reference photos or try to read a shared Google Sheet of operator facts. Do **not** add a Google Sheets Action unless you separately configure one; the Card Registry OpenAPI cannot write Sheets.
 
 ---
 
@@ -160,12 +174,12 @@ with Google once so their profile is provisioned.
    `https://shadow-group.vercel.app`). This must be the live HTTPS URL — the
    Action cannot call `localhost`.
 5. ChatGPT will list the available operations:
-   - `findCardInRegistry` — `GET /api/cards/sync`
+   - `findCardInRegistry` — `GET /api/cards/sync` (working versions; call before every POST)
    - `synchronizeCard` — `POST /api/cards/sync`
    - `uploadCardArtwork` — `POST /api/cards/sync/assets`
-   - `listApprovedCards` — `GET /api/cards`
+   - `listApprovedCards` — `GET /api/cards` (public canon; use this to list the expansion)
    - `getRandomApprovedCard` — `GET /api/cards/random`
-   - `lookupApprovedCard` — `GET /api/cards/lookup`
+   - `lookupApprovedCard` — `GET /api/cards/lookup` (approved gallery cards only)
 
 ### Test it
 
@@ -233,3 +247,8 @@ In the GPT editor → **Share**:
 
 Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
 `SUPABASE_SERVICE_ROLE_KEY`, `CARD_SYNC_API_KEY`, optional `NEXT_PUBLIC_SITE_URL`.
+
+Optional human backup of interview facts (not canon, not writable by these
+Actions): the operator-fact Google Sheet linked from
+[`custom-gpt-instructions.md`](./custom-gpt-instructions.md). Completed cards
+still must go through `POST /api/cards/sync`.
