@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -146,14 +146,32 @@ function OperatorEditor({ operator, onSaved }: { operator?: ManagedOperator; onS
 export function RosterManager({ operators }: { operators: ManagedOperator[] }) {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const [query, setQuery] = useState("");
   const onSaved = () => router.refresh();
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return operators;
+    return operators.filter((operator) =>
+      [operator.callsign, operator.display_name, operator.rank, operator.team_role, operator.memberEmail]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle)),
+    );
+  }, [operators, query]);
 
   return (
     <div className="roster-manager">
-      <div className="roster-toolbar">
-        <button type="button" className="button ghost" onClick={() => setCreating((value) => !value)}>
-          <Plus size={15} /> {creating ? "Cancel new operator" : "Add operator"}
-        </button>
+      <div className="command-list-toolbar">
+        <input
+          className="command-search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search callsign, name, role…"
+        />
+        <div className="roster-toolbar">
+          <button type="button" className="button ghost" onClick={() => setCreating((value) => !value)}>
+            <Plus size={15} /> {creating ? "Cancel new operator" : "Add operator"}
+          </button>
+        </div>
       </div>
 
       {creating ? (
@@ -164,7 +182,7 @@ export function RosterManager({ operators }: { operators: ManagedOperator[] }) {
       ) : null}
 
       <div className="roster-list">
-        {operators.map((operator) => (
+        {visible.length ? visible.map((operator) => (
           <details className="command-panel operator-card-editor" key={operator.id}>
             <summary>
               <span className="operator-summary-name">{operator.callsign}</span>
@@ -176,7 +194,7 @@ export function RosterManager({ operators }: { operators: ManagedOperator[] }) {
             </summary>
             <OperatorEditor operator={operator} onSaved={onSaved} />
           </details>
-        ))}
+        )) : <p className="admin-empty">No operators match that search.</p>}
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ Shadow Group team platform and custom trading-card registry.
 - Next.js 15 + TypeScript
 - Supabase Postgres, Auth, Storage, and Row Level Security
 - Vercel hosting
-- OpenAI API integration planned for structured card and artwork generation
+- OpenAI (`OPENAI_API_KEY`) for Command card image-read and Cardsmith drafts
 
 ## Local setup
 
@@ -46,7 +46,7 @@ Import the GitHub repository into Vercel and add the same environment variables 
 5. Later visits: sign in with email and password. Google is optional if the provider is enabled in Supabase Auth.
 6. If the email already has a Google-only auth user, use **Forgot password** (or set a password on that user in the Supabase dashboard) instead of Create account.
 
-At `/command/cards` you can add cards, edit text, **upload/replace the finished Magic card image** (stored in the `card-assets` bucket as kind `render`), and approve/reject versions. Uploading onto an already-approved version updates the public gallery immediately.
+At `/command/cards` you can **Create** a card by dropping a finished render (the form is filled from the image) or by asking Cardsmith to draft fields from a brief, then **Review** and publish. You can still upload/replace the Magic card image on an existing version (stored in the `card-assets` bucket as kind `render`). Approving a version puts it in the public gallery. Image-read and Cardsmith drafts need `OPENAI_API_KEY`.
 
 ## First-pass scope
 

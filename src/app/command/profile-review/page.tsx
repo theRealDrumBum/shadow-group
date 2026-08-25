@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { CommandPageHeader } from "../command-header";
 import { ProfileReviewQueue, type ProfileSubmission } from "./profile-review-queue";
 
 export const dynamic = "force-dynamic";
@@ -56,15 +55,12 @@ export default async function ProfileReviewPage() {
   });
 
   return (
-    <main className="section command-page">
-      <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
-      <span className="kicker">ADMIN MODULE // PROFILE APPROVALS</span>
-      <h1 className="page-title">Profile approvals.</h1>
-      <p>
-        Review member-submitted public profiles before they go live. Approving publishes the profile to the
-        roster; requesting changes or rejecting sends your notes back to the member. Private contact and medical
-        details are never shown here or published.
-      </p>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Personnel"
+        title="Profile approvals"
+        description="Approve public roster profiles. Private contact and medical details never appear here."
+      />
       <ProfileReviewQueue submissions={submissions} />
     </main>
   );

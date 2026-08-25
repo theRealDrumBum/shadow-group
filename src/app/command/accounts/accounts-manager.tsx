@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -95,12 +95,30 @@ function AccountEditor({ account, operators, onSaved }: { account: AccountRow; o
 
 export function AccountsManager({ accounts, operators }: { accounts: AccountRow[]; operators: OperatorOption[] }) {
   const router = useRouter();
-  const pending = accounts.filter((account) => account.account_status === "pending");
-  const others = accounts.filter((account) => account.account_status !== "pending");
+  const [query, setQuery] = useState("");
   const onSaved = () => router.refresh();
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return accounts;
+    return accounts.filter((account) =>
+      [account.email, account.display_name, account.role, account.account_status]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle)),
+    );
+  }, [accounts, query]);
+  const pending = visible.filter((account) => account.account_status === "pending");
+  const others = visible.filter((account) => account.account_status !== "pending");
 
   return (
     <div className="accounts-manager">
+      <div className="command-list-toolbar">
+        <input
+          className="command-search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search email, name, role…"
+        />
+      </div>
       <div className="command-panel">
         <div className="panel-label"><span>PENDING APPROVAL</span><span>{pending.length}</span></div>
         {pending.length ? (
@@ -113,7 +131,7 @@ export function AccountsManager({ accounts, operators }: { accounts: AccountRow[
       <div className="command-panel">
         <div className="panel-label"><span>ALL ACCOUNTS</span><span>{others.length}</span></div>
         <div className="accounts-list">
-          {others.map((account) => <AccountEditor key={account.id} account={account} operators={operators} onSaved={onSaved} />)}
+          {others.length ? others.map((account) => <AccountEditor key={account.id} account={account} operators={operators} onSaved={onSaved} />) : <p className="admin-empty">No other accounts match that search.</p>}
         </div>
       </div>
     </div>

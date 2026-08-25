@@ -8,7 +8,7 @@ import { adminBearerToken } from "@/lib/auth/browser-admin";
 import { colorsToText, parseColors, parseRules, rulesToText } from "@/lib/card-admin";
 import { OperatorCard } from "@/components/operator-card";
 import { toOperatorCard } from "@/lib/card-face";
-import { CardComposer, type OperatorOption } from "./card-composer";
+import type { OperatorOption } from "./card-composer";
 
 export type ReviewVersion = {
   id: string;
@@ -316,14 +316,21 @@ export function CardReviewQueue({
   const [busyVersionId, setBusyVersionId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>("all");
+  const [filter, setFilter] = useState<string>(() => (cards.some(isPendingReview) ? "review" : "all"));
+  const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
-    if (filter === "all") return cards;
-    if (filter === "review") return cards.filter(isPendingReview);
-    if (filter === "missing-art") return cards.filter(isMissingArt);
-    return cards.filter((card) => card.status === filter);
-  }, [cards, filter]);
+    const needle = query.trim().toLowerCase();
+    return cards.filter((card) => {
+      if (filter === "review" && !isPendingReview(card)) return false;
+      if (filter === "missing-art" && !isMissingArt(card)) return false;
+      if (filter !== "all" && filter !== "review" && filter !== "missing-art" && card.status !== filter) return false;
+      if (!needle) return true;
+      return [card.name, card.callsign, card.operatorName, card.slug]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle));
+    });
+  }, [cards, filter, query]);
 
   async function transition(versionId: string, status: string, needsNotes?: boolean) {
     const trimmedNote = notes[versionId]?.trim();
@@ -361,19 +368,25 @@ export function CardReviewQueue({
 
   return (
     <div className="review-queue">
-      <CardComposer operators={operators} />
-
-      <div className="review-filters">
-        {FILTERS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`review-filter${filter === option.value ? " is-active" : ""}`}
-            onClick={() => setFilter(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className="command-list-toolbar">
+        <input
+          className="command-search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search name, callsign, slug…"
+        />
+        <div className="review-filters">
+          {FILTERS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`review-filter${filter === option.value ? " is-active" : ""}`}
+              onClick={() => setFilter(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {error ? <div className="notice" role="alert">{error}</div> : null}
@@ -381,7 +394,7 @@ export function CardReviewQueue({
       {!filtered.length ? (
         <div className="notice">
           {filter === "review"
-            ? "Nothing is awaiting review. Add a card above or wait for the Cardsmith GPT to submit one."
+            ? "Nothing is awaiting review. Open Create to add a card, or wait for a Cardsmith submission."
             : filter === "missing-art"
               ? "Every visible version already has a stored Magic card image."
               : "No cards match this filter yet."}

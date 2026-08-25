@@ -12,6 +12,7 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
+import { CommandPageHeader } from "./command-header";
 import { getAuthedUserAndProfile, isApprovedAccount, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -61,15 +62,12 @@ export default async function CommandPage() {
 
   if (!approved) {
     return (
-      <main className="section command-page">
-        <div className="section-index">COMMAND ACCESS</div>
-        <span className="kicker">IDENTITY VERIFIED</span>
-        <h1 className="page-title">Approval pending.</h1>
+      <main className="command-page">
+        <CommandPageHeader kicker="Access" title="Approval pending" />
         <p>
-          Signed in as {profile?.email ?? user.email}. Your Shadow Group role is
-          <strong> {role}</strong> and your account status is <strong>{status}</strong>.
+          Signed in as {profile?.email ?? user.email}. Role is
+          <strong> {role}</strong>, status is <strong>{status}</strong>. An administrator has to approve this account before Command tools open.
         </p>
-        <p>An administrator must approve this account before command tools become available.</p>
         <Link href="/" className="button secondary">Return to team site</Link>
       </main>
     );
@@ -77,20 +75,15 @@ export default async function CommandPage() {
 
   if (!admin) {
     return (
-      <main className="section command-page">
-        <div className="section-index">MEMBER ACCESS</div>
-        <span className="kicker">IDENTITY VERIFIED // ACCESS APPROVED</span>
-        <h1 className="page-title">Member portal.</h1>
+      <main className="command-page">
+        <CommandPageHeader kicker="Member" title="Member portal" />
         <p>
-          Signed in as {profile?.email ?? user.email}. Your current role is <strong>{role}</strong>.
-        </p>
-        <p>
-          Keep your details on file with the team. Your private contact and medical information is stored
-          securely and never shown publicly; your public profile is reviewed before it goes live.
+          Signed in as {profile?.email ?? user.email}. Role is <strong>{role}</strong>.
+          Private details stay off the public site; public roster copy is reviewed first.
         </p>
         <div className="actions">
           <Link href="/command/profile" className="button primary">Manage my profile</Link>
-          <Link href="/" className="button secondary">Return to team site</Link>
+          <Link href="/" className="button secondary">Public site</Link>
         </div>
       </main>
     );
@@ -173,20 +166,19 @@ export default async function CommandPage() {
   ];
 
   return (
-    <main className="section command-page">
-      <div className="section-index">COMMAND ACCESS // ADMIN</div>
-      <div className="command-heading">
-        <div>
-          <span className="kicker">IDENTITY VERIFIED // ADMINISTRATOR</span>
-          <h1 className="page-title">Command center.</h1>
-          <p>Manage Shadow Group cards, personnel, events, recruiting, sponsors, and public team content.</p>
-        </div>
-        <div className="command-identity">
-          <ShieldCheck size={20} />
-          <span>{profile?.display_name ?? "Matthew Ward"}</span>
-          <small>{profile?.email ?? user.email}</small>
-        </div>
-      </div>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Overview"
+        title="Command"
+        description="Work queues first. Open a module only when you need the full editor."
+        actions={
+          <div className="command-identity">
+            <ShieldCheck size={20} />
+            <span>{profile?.display_name ?? "Operator"}</span>
+            <small>{profile?.email ?? user.email}</small>
+          </div>
+        }
+      />
 
       <div className="module-grid command-modules">
         {modules.map(({ title, detail, href, icon: Icon }, index) => (
@@ -195,7 +187,7 @@ export default async function CommandPage() {
             <Icon />
             <h3>{title}</h3>
             <p>{detail}</p>
-            <span className="module-state">OPEN MODULE <ChevronRight size={14} /></span>
+            <span className="module-state">Open <ChevronRight size={14} /></span>
           </Link>
         ))}
       </div>

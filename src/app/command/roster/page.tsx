@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { CommandPageHeader } from "../command-header";
 import { RosterManager, type ManagedOperator } from "./roster-manager";
 
 export const dynamic = "force-dynamic";
@@ -70,16 +69,12 @@ export default async function RosterPage() {
   }));
 
   return (
-    <main className="section command-page">
-      <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
-      <span className="kicker">ADMIN MODULE // PERSONNEL</span>
-      <h1 className="page-title">Roster management.</h1>
-      <p>
-        Add operators and edit identity, rank/status, field role, patch date, bios, and public visibility.
-        Long-term event attendance — invitations received, RSVP&apos;d yes, games actually played, and RSVP&apos;d-but-no-show —
-        is recorded from the Events module. Changes made here publish to the public roster immediately when an operator
-        is marked public.
-      </p>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Personnel"
+        title="Roster"
+        description="Add and edit operators. Public operators appear on the team site immediately. Event attendance is pulled from the Events module."
+      />
       <RosterManager operators={managed} />
     </main>
   );

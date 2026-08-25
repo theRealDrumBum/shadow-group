@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getAuthedUserAndProfile, isApprovedAccount } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { CommandPageHeader } from "../command-header";
 import { EventsConsole, type EventItem, type RsvpEntry, type MyStats } from "./events-console";
 
 export const dynamic = "force-dynamic";
@@ -96,15 +95,16 @@ export default async function EventsPage() {
     });
 
   return (
-    <main className="section command-page">
-      <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
-      <span className="kicker">{isAdmin ? "ADMIN MODULE // DEPLOYMENTS" : "MEMBER MODULE // DEPLOYMENTS"}</span>
-      <h1 className="page-title">Events.</h1>
-      <p>
-        {isAdmin
-          ? "Paste an event link to import the details, publish it to the public site, invite the whole roster, and record who actually showed up."
-          : "You'll see every event the team invites you to here. Tell command whether you're going so we can coordinate rides, loadouts, and headcount."}
-      </p>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Deployments"
+        title="Events"
+        description={
+          isAdmin
+            ? "Import from a link, publish, invite the roster, and record who showed up."
+            : "Reply to invites so command can plan rides, loadouts, and headcount."
+        }
+      />
       <EventsConsole isAdmin={isAdmin} events={allEvents} rosterCount={rosterCount ?? 0} myStats={myStats} />
     </main>
   );

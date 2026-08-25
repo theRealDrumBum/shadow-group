@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { CommandPageHeader } from "../command-header";
 
 export const dynamic = "force-dynamic";
 
@@ -18,20 +17,21 @@ export default async function PartnersPage() {
   ]);
 
   return (
-    <main className="section command-page">
-      <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
-      <span className="kicker">ADMIN MODULE // PARTNERS & CHANNELS</span>
-      <h1 className="page-title">Sponsors and social.</h1>
-      <p>Manage sponsor visibility, brand links, affiliate attribution, and operator social profiles.</p>
-      <h2>Brands</h2>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Catalog"
+        title="Sponsors"
+        description="Sponsor brands and operator social links. Edit brands in Gear if you need to change a record."
+      />
+      <h2 className="command-section-title">Brands</h2>
       <div className="admin-table">
         <div className="admin-table-head"><span>BRAND</span><span>SPONSOR</span><span>ACTIVE</span><span>WEBSITE</span></div>
         {(brands ?? []).map((brand) => <div className="admin-table-row" key={brand.id}><strong>{brand.name}</strong><span>{brand.is_sponsor ? "YES" : "NO"}</span><em>{brand.is_active ? "ACTIVE" : "INACTIVE"}</em><span>{brand.website_url ?? "—"}</span></div>)}
       </div>
-      <h2>Social links</h2>
+      <h2 className="command-section-title">Social links</h2>
       <div className="admin-table">
         <div className="admin-table-head"><span>OPERATOR</span><span>PLATFORM</span><span>LABEL</span><span>PUBLIC</span></div>
-        {(socials ?? []).map((social: any) => {
+        {(socials ?? []).map((social: { id: string; platform: string; label: string | null; url: string; is_public: boolean; operators: { callsign: string } | { callsign: string }[] | null }) => {
           const operator = Array.isArray(social.operators) ? social.operators[0] : social.operators;
           return <div className="admin-table-row" key={social.id}><strong>{operator?.callsign ?? "TEAM"}</strong><span>{social.platform}</span><span>{social.label ?? social.url}</span><em>{social.is_public ? "YES" : "NO"}</em></div>;
         })}

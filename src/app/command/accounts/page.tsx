@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getAuthedUserAndProfile, isApprovedAdmin } from "@/lib/auth/session-profile";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { CommandPageHeader } from "../command-header";
 import { AccountsManager, type AccountRow, type OperatorOption } from "./accounts-manager";
 
 export const dynamic = "force-dynamic";
@@ -19,14 +18,12 @@ export default async function AccountsPage() {
   ]);
 
   return (
-    <main className="section command-page">
-      <Link href="/command" className="text-link"><ArrowLeft size={16} /> Command center</Link>
-      <span className="kicker">ADMIN MODULE // ACCESS CONTROL</span>
-      <h1 className="page-title">Accounts.</h1>
-      <p>
-        Approve new Google sign-ins, set each member&apos;s role (recruit, member, editor, admin, alumni), and link
-        their login to a roster operator. Approving an account grants access to the member portal.
-      </p>
+    <main className="command-page">
+      <CommandPageHeader
+        kicker="Access"
+        title="Accounts"
+        description="Approve sign-ins, set role, and link a login to a roster operator. Pending accounts cannot use Command until you approve them."
+      />
       <AccountsManager accounts={(accounts ?? []) as AccountRow[]} operators={(operators ?? []) as OperatorOption[]} />
     </main>
   );
